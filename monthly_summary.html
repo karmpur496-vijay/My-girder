@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>Detailed Monthly Summary - GIRDER ERP</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #f39c12;
+            --bg-dark: #525659;
+        }
+
+        body { font-family: 'Times New Roman', serif; background-color: var(--bg-dark); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        /* Web Navigation & Controls */
+        .web-controls { 
+            width: 210mm; 
+            background: #ffffff; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn-web { 
+            padding: 10px 15px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            text-decoration: none;
+            font-family: sans-serif;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        
+        .btn-home { background: #64748b; color: white; }
+        .btn-home:hover { background: #475569; }
+        .btn-print { background: var(--primary); color: white; }
+        .btn-excel { background: #27ae60; color: white; }
+        .btn-sync { background: var(--secondary); color: white; }
+
+        /* A4 Document Design */
+        .a4-page { 
+            background: white; 
+            width: 210mm; 
+            min-height: 297mm; 
+            padding: 20mm 15mm; 
+            margin: 0 auto; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.3); 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column; 
+            border: 1px solid #000; 
+        }
+        
+        .header-table { width: 100%; border-bottom: 2px solid #000; margin-bottom: 20px; padding-bottom: 10px; text-align: center;}
+        .header-table h1 { margin: 0; font-size: 26px; text-transform: uppercase; color: #000; letter-spacing: 1px; }
+        .header-table p { margin: 5px 0; font-size: 16px; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background-color: #f2f2f2; padding: 10px; border: 1px solid #000; font-size: 12px; text-transform: uppercase; }
+        td { padding: 8px; border: 1px solid #000; text-align: center; font-size: 13px; font-weight: bold; }
+        
+        .summary-title { margin-top: 25px; font-weight: bold; text-decoration: underline; font-size: 15px; color: #000; }
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; border: 1.5px solid #000; padding: 15px; background: #fcfcfc; }
+        .summary-item { font-size: 14px; border-bottom: 1px dashed #bbb; padding: 5px 0; }
+        .summary-item b { color: #000; float: right; font-size: 15px; }
+
+        .signature-section { margin-top: auto; display: flex; justify-content: space-between; padding-top: 60px; }
+        .sig-box { text-align: center; width: 220px; border-top: 1.5px solid #000; font-size: 14px; padding-top: 8px; font-weight: bold; }
+
+        /* Print Settings */
+        @media print {
+            .web-controls { display: none !important; }
+            body { background: none; padding: 0; }
+            .a4-page { margin: 0; border: none; box-shadow: none; width: 100%; }
+            @page { size: A4; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="web-controls">
+    <a href="index.html" class="btn-web btn-home">🏠 होम डैशबोर्ड</a>
+    <div style="display: flex; gap: 8px;">
+        <button class="btn-web btn-sync" onclick="syncFromDatabase()">🔄 डेटा सिंक (Sync)</button>
+        <button class="btn-web btn-excel" onclick="exportToExcel()">📊 Excel फ़ाइल</button>
+        <button class="btn-web btn-print" onclick="window.print()">🖨 प्रिंट / PDF</button>
+    </div>
+</div>
+
+<div class="a4-page">
+    <div class="header-table">
+        <h1>Monthly Progress Summary</h1>
+        <p id="reportMonth">रिपोर्ट माह: Loading...</p>
+        <p style="font-size: 13px; font-weight: normal;">Project: PSC Girder ERP System | Managed by: Ranvijay Kumar</p>
+    </div>
+
+    <table id="workTable">
+        <thead>
+            <tr>
+                <th style="width: 50px;">S.No</th>
+                <th>Work Date</th>
+                <th>Wedges</th>
+                <th>Threading</th>
+                <th>Stressing</th>
+                <th>Grouting</th>
+                <th>Labor</th>
+            </tr>
+        </thead>
+        <tbody id="summaryBody">
+            </tbody>
+    </table>
+
+    <div class="summary-title">MONTHLY AGGREGATE SUMMARY:</div>
+    <div class="summary-grid">
+        <div class="summary-item">Total Wedges: <b id="tWedges">0.00</b></div>
+        <div class="summary-item">Total Threading: <b id="tThreading">0.00</b></div>
+        <div class="summary-item">Total Stressing: <b id="tStressing">0.00</b></div>
+        <div class="summary-item">Total Grouting: <b id="tGrouting">0.00</b></div>
+        <div class="summary-item">Total Labor: <b id="tLabor">0.00</b></div>
+        <div class="summary-item">Working Days: <b id="tRows">0</b></div>
+    </div>
+
+    <div class="signature-section">
+        <div class="sig-box">Site Engineer / Prepared By</div>
+        <div class="sig-box">Project Manager / Verified By</div>
+    </div>
+</div>
+
+<script>
+    window.onload = function() {
+        setMonthDisplay();
+        syncFromDatabase();
+    };
+
+    function setMonthDisplay() {
+        const date = new Date();
+        const monthNames = ["जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"];
+        document.getElementById('reportMonth').innerText = `रिपोर्ट माह: ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    function syncFromDatabase() {
+        // Fetch data from 'girderReports' key used in daily_work.html
+        const reports = JSON.parse(localStorage.getItem('girderReports')) || [];
+        const tbody = document.getElementById('summaryBody');
+        tbody.innerHTML = "";
+
+        let totals = [0, 0, 0, 0, 0]; // wedges, threading, stressing, grouting, labor
+
+        if(reports.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='7' style='padding: 20px; color: #666;'>कोई डेटा नहीं मिला। कृपया 'Daily Work Entry' पेज पर डेटा दर्ज करें।</td></tr>";
+        } else {
+            // Sort data by date (latest first)
+            reports.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            reports.forEach((item, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${formatDate(item.date)}</td>
+                    <td>${parseFloat(item.wedges || 0).toFixed(2)}</td>
+                    <td>${parseFloat(item.threading || 0).toFixed(2)}</td>
+                    <td>${parseFloat(item.stressing || 0).toFixed(2)}</td>
+                    <td>${parseFloat(item.grouting || 0).toFixed(2)}</td>
+                    <td>${parseFloat(item.labor || 0).toFixed(2)}</td>
+                `;
+
+                totals[0] += parseFloat(item.wedges) || 0;
+                totals[1] += parseFloat(item.threading) || 0;
+                totals[2] += parseFloat(item.stressing) || 0;
+                totals[3] += parseFloat(item.grouting) || 0;
+                totals[4] += parseFloat(item.labor) || 0;
+            });
+        }
+
+        // Update Summary Footer
+        document.getElementById('tWedges').innerText = totals[0].toFixed(2);
+        document.getElementById('tThreading').innerText = totals[1].toFixed(2);
+        document.getElementById('tStressing').innerText = totals[2].toFixed(2);
+        document.getElementById('tGrouting').innerText = totals[3].toFixed(2);
+        document.getElementById('tLabor').innerText = totals[4].toFixed(2);
+        document.getElementById('tRows').innerText = reports.length;
+    }
+
+    function formatDate(dateStr) {
+        if(!dateStr) return "-";
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-GB'); // DD/MM/YYYY format
+    }
+
+    function exportToExcel() {
+        let table = document.getElementById("workTable");
+        let wb = XLSX.utils.table_to_book(table, {sheet: "Monthly_Summary"});
+        const fileName = `Girder_ERP_Summary_${new Date().toLocaleDateString()}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+    }
+</script>
+
+</body>
+</html>

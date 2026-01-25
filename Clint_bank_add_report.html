@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - Ranvijay Kumar</title>
+    <style>
+        :root { --primary: #1e3a8a; --accent: #b45309; --bg: #f3f4f6; --highlight: #fef9c3; }
+        * { box-sizing: border-box; font-family: sans-serif; }
+        body { background: var(--bg); margin: 0; padding: 5px; }
+        
+        .card { background: white; border-radius: 10px; padding: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 15px; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+        label { font-size: 10px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 3px; }
+        input, textarea, select { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; }
+        
+        .btn-group { display: flex; gap: 8px; margin-top: 15px; }
+        .btn { flex: 1; padding: 10px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; font-size: 12px; }
+        .btn-add { background: var(--primary); }
+        .btn-print { background: #10b981; }
+        
+        .invoice-box { background: white; padding: 20px; border-top: 5px solid var(--primary); }
+        
+        /* Bill From & To Layout */
+        .billing-section { display: flex; justify-content: space-between; gap: 20px; margin: 20px 0; border-bottom: 1px solid #eee; padding-bottom: 15px; flex-wrap: wrap; }
+        .bill-col { flex: 1; min-width: 200px; }
+        .bill-col h4 { margin: 0 0 5px 0; color: var(--primary); font-size: 12px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 3px; }
+        .bill-col p { margin: 2px 0; font-size: 12px; line-height: 1.4; color: #333; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 11px; min-width: 700px; }
+        th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+        th { background: #f8fafc; color: var(--primary); }
+
+        .bottom-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+        .bank-info { border-left: 3px solid var(--primary); padding-left: 10px; font-size: 11px; flex: 1; min-width: 200px; }
+        .summary { flex: 1; min-width: 250px; }
+        .sum-line { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+        .net-pay-highlight { background: #1e3a8a; color: white; padding: 12px; border-radius: 8px; text-align: center; margin-top: 10px; }
+        .net-amount { font-size: 22px; font-weight: 900; display: block; }
+        .hide-bank { display: none !important; }
+
+        @media print { 
+            .no-print { display: none !important; } 
+            body { background: white; padding: 0; }
+            .card { box-shadow: none; max-width: 100%; border: none; }
+            .net-pay-highlight { border: 1px solid #000; color: #000 !important; background: var(--highlight) !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card no-print">
+    <div class="form-grid">
+        <div class="field">
+            <label>Bill From (Sender)</label>
+            <textarea id="f-from" rows="2" oninput="updateBilling()">Ranvijay Kumar&#10;Mob: 7800817675</textarea>
+        </div>
+        <div class="field">
+            <label>Bill To (Client)</label>
+            <textarea id="f-to" rows="2" placeholder="Enter Client Name & Address" oninput="updateBilling()"></textarea>
+        </div>
+    </div>
+    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+    <div class="form-grid">
+        <div class="field"><label>Bank Name</label><input type="text" id="f-bname" placeholder="Optional" oninput="updateBank()"></div>
+        <div class="field"><label>A/c No</label><input type="text" id="f-bacc" value="00000000000" oninput="updateBank()"></div>
+        <div class="field"><label>IFSC</label><input type="text" id="f-bifsc" value="SBIN0000" oninput="updateBank()"></div>
+        <div class="field"><label>Date</label><input type="date" id="f-date" oninput="updateHeader()"></div>
+        <div class="field"><label>Inv #</label><input type="text" id="f-inv" value="001" oninput="updateHeader()"></div>
+    </div>
+    
+    <div class="form-grid" style="margin-top:10px; border-top: 1px solid #eee; padding-top:10px;">
+        <div class="field"><label>Location</label><input type="text" id="f-loc"></div>
+        <div class="field"><label>Mtrs</label><input type="number" id="f-mtr"></div>
+        <div class="field">
+            <label>Strand</label>
+            <select id="f-stype"><option value="0.78">12.9 mm</option><option value="1.10">15.2 mm</option></select>
+        </div>
+        <div class="field"><label>Nos Strands</label><input type="number" id="f-lrpc"></div>
+        <div class="field"><label>Rate/Ton</label><input type="number" id="f-rtn"></div>
+        <div class="field"><label>Qty (Nos)</label><input type="number" id="f-nos" value="1"></div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-add" onclick="addItem()">+ Add Item</button>
+        <button class="btn btn-print" onclick="window.print()">Print Bill</button>
+    </div>
+</div>
+
+<div class="card invoice-box">
+    <div style="display:flex; justify-content:space-between; align-items: center;">
+        <h2 style="margin:0; color:var(--primary); font-size:24px; letter-spacing: 1px;">INVOICE</h2>
+        <div style="text-align:right; font-size:11px;">
+            <p style="margin:2px 0;"><strong>Date:</strong> <span id="d-date"></span></p>
+            <p style="margin:2px 0;"><strong>Bill No:</strong> #<span id="d-inv">001</span></p>
+        </div>
+    </div>
+
+    <div class="billing-section">
+        <div class="bill-col">
+            <h4>Bill From</h4>
+            <p id="d-from" style="white-space: pre-line; font-weight: bold;">Ranvijay Kumar\nMob: 7800817675</p>
+        </div>
+        <div class="bill-col">
+            <h4>Bill To</h4>
+            <p id="d-to" style="white-space: pre-line;">Client Details...</p>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>SN</th><th>Location</th><th>Mtrs</th><th>Type</th><th>Strands</th><th>Wt/U</th><th>Rate</th><th>Nos</th><th>Ton</th><th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+
+    <div class="bottom-row">
+        <div class="bank-info hide-bank" id="d-bank-wrap">
+            <h4 style="margin:0 0 5px 0; font-size:11px; color:var(--primary);">PAYMENT DETAILS</h4>
+            Bank: <span id="d-bname"></span><br>
+            A/c: <span id="d-bacc"></span><br>
+            IFSC: <span id="d-bifsc"></span>
+        </div>
+        
+        <div class="summary">
+            <div class="sum-line"><span>Gross Amount:</span><span id="h30">0.00</span></div>
+            <div class="sum-line"><span>Advance Paid:</span><input type="number" id="h32" value="0" oninput="calcTotal()" style="width:70px; text-align:right; padding:2px;"></div>
+            <div class="sum-line" style="color:#b45309; font-size:11px;"><span>TDS (1%):</span><span id="h31">0.00</span></div>
+            <div class="net-pay-highlight">
+                <span style="font-size:11px; text-transform:uppercase;">Net Payable</span>
+                <span class="net-amount" id="h33">₹ 0.00</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let rows = [];
+    window.onload = () => { 
+        document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; 
+        updateHeader(); 
+        updateBilling();
+        updateBank(); 
+    }
+    
+    function updateHeader() {
+        document.getElementById('d-date').innerText = document.getElementById('f-date').value;
+        document.getElementById('d-inv').innerText = document.getElementById('f-inv').value;
+    }
+
+    function updateBilling() {
+        document.getElementById('d-from').innerText = document.getElementById('f-from').value;
+        document.getElementById('d-to').innerText = document.getElementById('f-to').value || "Client Details...";
+    }
+
+    function updateBank() {
+        const bName = document.getElementById('f-bname').value;
+        const bWrap = document.getElementById('d-bank-wrap');
+        if(bName.trim() === "") {
+            bWrap.classList.add('hide-bank');
+        } else {
+            bWrap.classList.remove('hide-bank');
+            document.getElementById('d-bname').innerText = bName;
+            document.getElementById('d-bacc').innerText = document.getElementById('f-bacc').value;
+            document.getElementById('d-bifsc').innerText = document.getElementById('f-bifsc').value;
+        }
+    }
+
+    function addItem() {
+        const loc = document.getElementById('f-loc').value;
+        const mtr = parseFloat(document.getElementById('f-mtr').value)||0;
+        const factor = parseFloat(document.getElementById('f-stype').value); 
+        const lrpc = parseFloat(document.getElementById('f-lrpc').value)||0; 
+        const rtn = parseFloat(document.getElementById('f-rtn').value)||0;
+        const nos = parseFloat(document.getElementById('f-nos').value)||1;
+        if(!loc || mtr <= 0) return alert("Enter valid data!");
+        
+        const wtu = (mtr * lrpc * factor) / 1000;
+        const tton = wtu * nos;
+        const total = tton * rtn;
+        rows.push({ loc, mtr, strandLabel: factor === 0.78 ? "12.9" : "15.2", lrpc, wtu, rtn, nos, tton, total });
+        render();
+        document.getElementById('f-loc').value = ""; document.getElementById('f-mtr').value = "";
+    }
+
+    function render() {
+        const tbody = document.getElementById('tbody'); tbody.innerHTML = ""; let gross = 0;
+        rows.forEach((r, i) => {
+            gross += r.total;
+            tbody.innerHTML += `<tr>
+                <td>${i+1}</td>
+                <td style="text-align:left;">${r.loc}</td>
+                <td>${r.mtr}</td>
+                <td>${r.strandLabel}</td>
+                <td>${r.lrpc}</td>
+                <td>${r.wtu.toFixed(3)}</td>
+                <td>${r.rtn.toLocaleString()}</td>
+                <td>${r.nos}</td>
+                <td>${r.tton.toFixed(3)}</td>
+                <td style="font-weight:bold;">${r.total.toFixed(2)}</td>
+            </tr>`;
+        });
+        calcTotal(gross);
+    }
+
+    function calcTotal(g) {
+        let gross = g !== undefined ? g : rows.reduce((a, b) => a + b.total, 0);
+        const adv = parseFloat(document.getElementById('h32').value) || 0;
+        const taxable = (gross - adv) > 0 ? (gross - adv) : 0;
+        const tds = taxable * 0.01;
+        document.getElementById('h30').innerText = gross.toLocaleString('en-IN');
+        document.getElementById('h31').innerText = tds.toFixed(2);
+        document.getElementById('h33').innerText = "₹ " + (gross - tds - adv).toLocaleString('en-IN');
+    }
+</script>
+</body>
+</html>

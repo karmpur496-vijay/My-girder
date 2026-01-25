@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labor Supply Log</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #f39c12;
+            --success: #27ae60;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        .header { background: var(--primary); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .back-btn { color: white; text-decoration: none; font-size: 20px; }
+        
+        .form-card { background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-row { display: flex; gap: 10px; margin-bottom: 15px; }
+        .form-group { flex: 1; margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+
+        .btn-group { display: flex; gap: 10px; }
+        .btn-save { background: var(--secondary); color: white; border: none; padding: 12px; flex: 2; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-export { background: var(--success); color: white; border: none; padding: 12px; flex: 1; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        .report-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 10px; }
+        .report-table th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 12px; }
+        .report-table td { padding: 12px; border-top: 1px solid var(--border); font-size: 14px; }
+        .total-row { background: #e0f2fe; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="index.html" class="back-btn">⬅</a>
+        <h2 style="margin:0; font-size: 18px;">लेबर सप्लाई लॉग</h2>
+        <span onclick="clearLaborData()" style="cursor:pointer; font-size: 12px; opacity: 0.7;">Clear</span>
+    </div>
+
+    <div class="form-card">
+        <div class="form-group">
+            <label>तारीख (Date)</label>
+            <input type="date" id="laborDate">
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>मिस्त्री (Skilled)</label>
+                <input type="number" id="skilled" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>हेल्पर (Unskilled)</label>
+                <input type="number" id="unskilled" placeholder="0">
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-save" onclick="saveLaborData()">डाटा सुरक्षित करें</button>
+            <button class="btn-export" onclick="downloadLaborCSV()">Excel</button>
+        </div>
+    </div>
+
+    <h3 style="font-size: 16px;">हालिया लेबर रिपोर्ट</h3>
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Skilled</th>
+                <th>Helper</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody id="laborTable"></tbody>
+    </table>
+
+    <script>
+        document.getElementById('laborDate').valueAsDate = new Date();
+        window.onload = displayLaborData;
+
+        function saveLaborData() {
+            const date = document.getElementById('laborDate').value;
+            const skilled = parseInt(document.getElementById('skilled').value) || 0;
+            const unskilled = parseInt(document.getElementById('unskilled').value) || 0;
+            const total = skilled + unskilled;
+
+            if(total === 0) { alert("कृपया लेबर की संख्या डालें!"); return; }
+
+            const entry = { date, skilled, unskilled, total };
+            let reports = JSON.parse(localStorage.getItem('laborReports')) || [];
+            reports.push(entry);
+            localStorage.setItem('laborReports', JSON.stringify(reports));
+
+            // इनपुट साफ़ करें
+            document.getElementById('skilled').value = "";
+            document.getElementById('unskilled').value = "";
+            displayLaborData();
+        }
+
+        function displayLaborData() {
+            const table = document.getElementById('laborTable');
+            let reports = JSON.parse(localStorage.getItem('laborReports')) || [];
+            
+            table.innerHTML = "";
+            reports.reverse().forEach(item => {
+                const row = `<tr>
+                    <td>${item.date}</td>
+                    <td>${item.skilled}</td>
+                    <td>${item.unskilled}</td>
+                    <td class="total-row">${item.total}</td>
+                </tr>`;
+                table.innerHTML += row;
+            });
+        }
+
+        function downloadLaborCSV() {
+            let reports = JSON.parse(localStorage.getItem('laborReports')) || [];
+            if(reports.length === 0) return alert("डाटा खाली है!");
+
+            let csv = "Date,Skilled,Unskilled,Total\n";
+            reports.forEach(r => csv += `${r.date},${r.skilled},${r.unskilled},${r.total}\n`);
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Labor_Supply_Report.csv';
+            a.click();
+        }
+
+        function clearLaborData() {
+            if(confirm("क्या आप लेबर का सारा डाटा डिलीट करना चाहते हैं?")) {
+                localStorage.removeItem('laborReports');
+                displayLaborData();
+            }
+        }
+    </script>
+</body>
+</html>

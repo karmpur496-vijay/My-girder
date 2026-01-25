@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Work Report - A4 Format</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #f39c12;
+            --success: #27ae60;
+            --bg: #525659; /* PDF Viewer style background */
+            --card: #ffffff;
+            --text: #1e293b;
+            --border: #000000;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--text); }
+        
+        /* A4 Container */
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            margin: 10px auto;
+            background: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+        }
+
+        .no-print {
+            max-width: 210mm;
+            margin: 0 auto 10px auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .header { 
+            border-bottom: 2px solid var(--primary); 
+            padding-bottom: 10px; 
+            margin-bottom: 20px; 
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 { margin: 0; color: var(--primary); font-size: 24px; text-transform: uppercase; }
+
+        /* Form Grid */
+        .form-card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-bottom: 20px; background: #f8fafc; }
+        .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: var(--primary); }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+
+        /* Buttons */
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-save { background: var(--secondary); }
+        .btn-export { background: var(--success); }
+        .btn-print { background: var(--primary); }
+        .btn-back { background: #64748b; text-decoration: none; display: flex; align-items: center; font-size: 14px; }
+
+        /* Table Style */
+        .report-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .report-table th, .report-table td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 12px; }
+        .report-table th { background: #e2e8f0; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .a4-page { margin: 0; box-shadow: none; border: none; width: 100%; }
+            .no-print { display: none; }
+            .form-card { display: none; }
+            .header { border-bottom: 2px solid #000; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <a href="index.html" class="btn btn-back">⬅ वापस</a>
+        <button class="btn btn-print" onclick="window.print()">🖨 प्रिंट / PDF</button>
+        <button class="btn btn-export" onclick="downloadCSV()">Excel बैकअप</button>
+        <button class="btn" style="background: red;" onclick="clearAll()">डाटा साफ़ करें</button>
+        <button class="btn btn-save" style="background:golden" onclick="saveData()">डाटा लिस्ट में जोड़ें</button>
+   
+        
+    </div>
+
+    <div class="a4-page">
+        <div class="header">
+            <div>
+                <h1>Daily Work Report</h1>
+                <p style="margin: 5px 0;">PSC Girder Production & Management</p>
+            </div>
+            <div style="text-align: right; font-size: 12px;">
+                <strong>Date:</strong> <span id="displayDate"></span>
+            </div>
+        </div>
+
+        <div class="form-card no-print">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>तारीख (Date)</label>
+                    <input type="date" id="workDate">
+                </div>
+                <div class="form-group">
+                    <label>गर्डर नंबर (Girder No.)</label>
+                    <input type="text" id="girderNo" placeholder="G-01">
+                </div>
+                <div class="form-group">
+                    <label>Wedges Fixing (Nos)</label>
+                    <input type="number" id="wedges" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Cable Threading (Nos)</label>
+                    <input type="number" id="threading" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Stressing (Nos)</label>
+                    <input type="number" id="stressing" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Grouting (Nos)</label>
+                    <input type="number" id="grouting" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Supply Labor</label>
+                    <input type="number" id="labor" value="0">
+                    
+                </div>
+  
+            </div>
+        
+        </div>
+
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Sr.No</th>
+                    <th>Date</th>
+                    <th>Girder No</th>
+                    <th>Wedges</th>
+                    <th>Threading</th>
+                    <th>Stressing</th>
+                    <th>Grouting</th>
+                    <th>Labor</th>
+                </tr>
+            </thead>
+            <tbody id="dataTable">
+                </tbody>
+        </table>
+
+        <div style="margin-top: 50px; display: flex; justify-content: space-between;" class="only-print">
+            <div style="border-top: 1px solid #000; width: 150px; text-align: center; padding-top: 5px;">Site Engineer</div>
+            <div style="border-top: 1px solid #000; width: 150px; text-align: center; padding-top: 5px;">Project Manager</div>
+        </div>
+    </div>
+ 
+    <script>
+        // आज की तारीख सेट करें
+        const today = new Date();
+        document.getElementById('workDate').valueAsDate = today;
+        document.getElementById('displayDate').innerText = today.toLocaleDateString();
+
+        window.onload = displayData;
+
+        function saveData() {
+            const date = document.getElementById('workDate').value;
+            const girder = document.getElementById('girderNo').value;
+            const wedges = document.getElementById('wedges').value;
+            const threading = document.getElementById('threading').value;
+            const stressing = document.getElementById('stressing').value;
+            const grouting = document.getElementById('grouting').value;
+            const labor = document.getElementById('labor').value;
+
+            if(!girder) { alert("गर्डर नंबर लिखें!"); return; }
+
+            const entry = { date, girder, wedges, threading, stressing, grouting, labor };
+            
+            let reports = JSON.parse(localStorage.getItem('girderReports')) || [];
+            reports.push(entry);
+            localStorage.setItem('girderReports', JSON.stringify(reports));
+
+            // Form Reset
+            document.getElementById('girderNo').value = "";
+            displayData();
+        }
+
+        function displayData() {
+            const table = document.getElementById('dataTable');
+            let reports = JSON.parse(localStorage.getItem('girderReports')) || [];
+            
+            table.innerHTML = "";
+            reports.forEach((item, index) => {
+                const row = `<tr>
+                    <td>${index + 1}</td>
+                    <td>${item.date}</td>
+                    <td><b>${item.girder}</b></td>
+                    <td>${item.wedges}</td>
+                    <td>${item.threading}</td>
+                    <td>${item.stressing}</td>
+                    <td>${item.grouting}</td>
+                    <td>${item.labor}</td>
+                </tr>`;
+                table.innerHTML += row;
+            });
+        }
+
+        function downloadCSV() {
+            let reports = JSON.parse(localStorage.getItem('girderReports')) || [];
+            if(reports.length === 0) return alert("डेटा खाली है!");
+
+            let csv = "Date,Girder No,Wedges,Threading,Stressing,Grouting,Labor\n";
+            reports.forEach(r => {
+                csv += `${r.date},${r.girder},${r.wedges},${r.threading},${r.stressing},${r.grouting},${r.labor}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Detailed_Girder_Report.csv';
+            a.click();
+        }
+
+        function clearAll() {
+            if(confirm("क्या आप सारा डेटा डिलीट करना चाहते हैं?")) {
+                localStorage.removeItem('girderReports');
+                displayData();
+            }
+        }
+    </script>
+</body>
+</html>
