@@ -53,14 +53,12 @@
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: var(--primary); }
         input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
 
-        /* OLD BUTTON STYLES (commented out to avoid conflicts with external modern-buttons.css) */
-        /*
+        /* Buttons */
         .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
         .btn-save { background: var(--secondary); }
         .btn-export { background: var(--success); }
         .btn-print { background: var(--primary); }
         .btn-back { background: #64748b; text-decoration: none; display: flex; align-items: center; font-size: 14px; }
-        */
 
         /* Table Style */
         .report-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -75,20 +73,15 @@
             .header { border-bottom: 2px solid #000; }
         }
     </style>
-
-    <!-- Added external modern buttons stylesheet -->
-    <link rel="stylesheet" href="css/modern-buttons.css">
-
 </head>
 <body>
 
     <div class="no-print">
         <a href="index.html" class="btn btn-back">⬅ वापस</a>
-        <button class="btn btn-print" onclick="window.print()">🖨 प्रिं�� / PDF</button>
+        <button class="btn btn-print" onclick="window.print()">🖨 प्रिंट / PDF</button>
         <button class="btn btn-export" onclick="downloadCSV()">Excel बैकअप</button>
         <button class="btn" style="background: red;" onclick="clearAll()">डाटा साफ़ करें</button>
-        <button class="btn btn-save" style="background:golden" onclick="saveData()">डाटा लिस्ट में जोड़ें</button>
-   
+      
         
     </div>
 
@@ -134,7 +127,8 @@
                     <input type="number" id="labor" value="0">
                     
                 </div>
-  
+    <button class="btn btn-save" style="background:golden" onclick="saveData()">डाटा लिस्ट में जोड़ें</button>
+   
             </div>
         
         </div>
