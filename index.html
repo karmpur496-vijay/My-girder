@@ -7,80 +7,133 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #1e3a8a; --secondary: #f39c12; --bg: #f1f5f9; --card: #ffffff;
+            --primary: #1e3a8a; 
+            --secondary: #f39c12; 
+            --bg: #f8fafc; 
+            --card: #ffffff;
         }
-        body { font-family: 'Noto Sans Devanagari', sans-serif; background: var(--bg); margin: 0; padding: 0; }
+        body { font-family: 'Noto Sans Devanagari', sans-serif; background: var(--bg); margin: 0; padding: 0; color: #334155; }
         
-        header { background: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .container { padding: 20px; max-width: 1200px; margin: auto; }
+        header { 
+            background: linear-gradient(135deg, var(--primary), #1e40af); 
+            color: white; 
+            padding: 30px 20px; 
+            text-align: center; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+        }
+        .user-badge { 
+            display: inline-block; 
+            margin-top: 10px; 
+            background: var(--secondary); 
+            padding: 5px 15px; 
+            border-radius: 20px; 
+            font-weight: bold; 
+            font-size: 0.9rem;
+            color: #000;
+        }
         
-        .section-title { font-size: 1.2rem; font-weight: bold; margin: 20px 0 10px; color: var(--primary); border-left: 4px solid var(--secondary); padding-left: 10px; }
+        .container { padding: 30px 20px; max-width: 1100px; margin: auto; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+        .section-title { 
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            margin: 30px 0 15px; 
+            color: var(--primary); 
+            border-left: 5px solid var(--secondary); 
+            padding-left: 12px; 
+        }
         
-        .card { background: var(--card); padding: 20px; border-radius: 12px; display: flex; align-items: center; text-decoration: none; color: #333; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: 0.3s; border: 1px solid #e2e8f0; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--secondary); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         
-        .icon { font-size: 40px; margin-right: 15px; }
-        .info h3 { margin: 0; font-size: 16px; color: var(--primary); }
-        .info p { margin: 5px 0 0; font-size: 12px; color: #64748b; }
+        .card { 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: 15px; 
+            display: flex; 
+            align-items: center; 
+            text-decoration: none; 
+            color: #333; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            transition: all 0.3s ease; 
+            border: 1px solid #e2e8f0; 
+        }
+        .card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+            border-color: var(--secondary); 
+        }
+        
+        .icon { font-size: 45px; margin-right: 20px; }
+        .info h3 { margin: 0; font-size: 18px; color: var(--primary); }
+        .info p { margin: 5px 0 0; font-size: 13px; color: #64748b; font-weight: 500; }
 
-        .search-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 20px; font-size: 16px; }
+        .search-box { 
+            width: 100%; 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 2px solid #e2e8f0; 
+            margin-bottom: 25px; 
+            font-size: 16px; 
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        footer { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>GIRDER WORK ERP</h1>
-    <p>Engineering & Management System</p>
+    <div class="user-badge">प्रशासक: RANVIJAY KUMAR</div>
 </header>
 
 <div class="container">
-    <input type="text" class="search-box" placeholder="सर्च करें (जैसे: Invoice, Drawing...)" id="search">
+    <input type="text" class="search-box" placeholder="🔍 मॉड्यूल सर्च करें..." id="search">
 
-    <div class="section-title">Field Work & Attendance</div>
+    <div class="section-title">📊 Field Work & Attendance</div>
     <div class="grid">
         <a href="daily_work.html" class="card">
-            <div class="icon">🛠️</div>
-            <div class="info"><h3>दैनिक कार्य रिपोर्ट</h3><p>Daily Progress Entry</p></div>
+            <div class="icon">🏗️</div>
+            <div class="info"><h3>दैनिक कार्य रिपोर्ट</h3><p>फाइल: daily_work.html</p></div>
         </a>
         <a href="monthly_summary.html" class="card">
             <div class="icon">📅</div>
-            <div class="info"><h3>मासिक सारांश</h3><p>Monthly A4 Print Report</p></div>
+            <div class="info"><h3>मासिक सारांश</h3><p>फाइल: monthly_summary.html</p></div>
         </a>
     </div>
 
-    <div class="section-title">Billing & Invoices</div>
+    <div class="section-title">💰 Billing & Invoices</div>
     <div class="grid">
         <a href="with_tds_Girder_report_form.html" class="card">
-            <div class="icon">📄</div>
-            <div class="info"><h3>Invoice (With TDS)</h3><p>Decorative Invoice Form</p></div>
+            <div class="icon">📝</div>
+            <div class="info"><h3>Invoice (With TDS)</h3><p>फाइल: with_tds_Girder_report_form.html</p></div>
         </a>
         <a href="without_tds_report.html" class="card">
             <div class="icon">📑</div>
-            <div class="info"><h3>Invoice (Without TDS)</h3><p>Standard Invoice System</p></div>
+            <div class="info"><h3>Invoice (Without TDS)</h3><p>फाइल: without_tds_report.html</p></div>
         </a>
         <a href="clint_bank_add_report.html" class="card">
             <div class="icon">🏦</div>
-            <div class="info"><h3>Bank & Client Details</h3><p>Invoice with Banking Info</p></div>
+            <div class="info"><h3>Bank & Client Details</h3><p>फाइल: clint_bank_add_report.html</p></div>
         </a>
     </div>
 
-    <div class="section-title">Technical Tools</div>
-<div class="grid">
-    <a href="technical_drawing.html" class="card">
-        <div class="icon">📐</div>
-        <div class="info">
-            <h3>Technical Drawing</h3>
-            <p>Precision Drawing Generator</p>
-        </div>
-    </a>
-</div>
+    <div class="section-title">⚙️ Engineering Tools</div>
+    <div class="grid">
+        <a href="technical_drawing.html" class="card">
+            <div class="icon">📐</div>
+            <div class="info"><h3>Technical Drawing</h3><p>फाइल: technical_drawing.html</p></div>
+        </a>
+    </div>
 
 </div>
+
+<footer>
+    &copy; 2024-25 | Girder Work ERP System | Managed by <b>Ranvijay Kumar</b>
+</footer>
 
 <script>
-    // सर्च फिल्टर फंक्शन
     document.getElementById('search').addEventListener('keyup', function() {
         let filter = this.value.toLowerCase();
         let cards = document.querySelectorAll('.card');

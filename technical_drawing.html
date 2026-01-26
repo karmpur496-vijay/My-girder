@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranvijay Kumar | Complete Precision Drawing</title>
+    <style>
+        :root { --sidebar-w: 320px; }
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        body, html { margin: 0; padding: 0; background: #f1f5f9; font-family: 'Inter', sans-serif; }
+
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { 
+            width: var(--sidebar-w); background: white; border-right: 1px solid #e2e8f0; 
+            padding: 20px; position: fixed; height: 100vh; overflow-y: auto; z-index: 1000;
+        }
+
+        .workspace { flex-grow: 1; margin-left: var(--sidebar-w); padding: 20px; display: flex; justify-content: center; background: #cbd5e1; }
+        
+        .a4-page {
+            width: 210mm; height: 296mm; background: white; padding: 10mm;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; position: relative;
+        }
+
+        .plate { 
+            width: 560px; height: 560px; background: #fff; border: 2.5px solid #000; 
+            position: relative; margin: 20px auto; cursor: crosshair; overflow: hidden;
+        }
+
+        /* Essential Shapes */
+        .center-hole { 
+            position: absolute; left: 50%; top: 50%;
+            border: 2px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.02); font-weight: bold; transform: translate(-50%, -50%); z-index: 5;
+            text-align: center; font-size: 11px;
+        }
+
+        #dynamic-hole { 
+            position: absolute; border: 2px solid #000; background: transparent;
+            border-radius: 50%; transform: translate(-50%, -50%); display: flex; 
+            align-items: center; justify-content: center; font-weight: bold; 
+            color: #000; font-size: 10px; z-index: 30;
+        }
+
+        /* Lines & Labels */
+        .line { position: absolute; pointer-events: none; }
+        .label { position: absolute; padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 3px; transform: translate(-50%, -50%); z-index: 60; white-space: nowrap; }
+        
+        /* Fixed Reference Lines */
+        .fixed-l-h { border-top: 1.5px dashed red; width: 100%; left: 0; top: 280px; position: absolute; opacity: 0.5; }
+        .fixed-l-v { border-left: 1.5px dashed red; height: 100%; top: 0; left: 280px; position: absolute; opacity: 0.5; }
+        .fixed-lbl { color: red; border: 1px solid red; background: white; }
+
+        /* Coordinate Lines (Black) */
+        .dyn-l-x { border-top: 1.5px solid #000; z-index: 40; }
+        .dyn-l-y { border-left: 1.5px solid #000; z-index: 40; }
+        .dyn-lbl { color: white; background: #000; }
+
+        /* Measurement Line for Gap */
+        #gap-line { height: 2px; background: #2563eb; transform-origin: left center; z-index: 15; display: flex; align-items: center; justify-content: center; }
+        #gap-label { background: #2563eb; color: white; transform: translate(-50%, -15px); }
+
+        .input-wrap { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 10px; }
+        .badge { float: right; color: #2563eb; font-weight: bold; }
+
+        @media print {
+            .sidebar { display: none !important; }
+            .workspace { margin: 0; padding: 0; background: white; }
+            .a4-page { transform: scale(0.98); margin: 0; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <h2 style="margin-bottom: 20px;">Control Panel</h2>
+            
+            <div class="input-wrap">
+                <label>Unit: <select id="unit-sel" style="border:none; font-weight:bold; color:#2563eb;"><option value="mm">mm</option><option value="in">inch</option></select></label>
+            </div>
+
+            <div class="input-wrap">
+                <label>Center Hole Ø <span id="cd-txt" class="badge">120mm</span></label>
+                <input type="range" id="cd-in" min="120" max="160" value="120" style="width:100%;">
+            </div>
+
+            <div class="input-wrap">
+                <label>Small Hole Ø <span id="d-txt" class="badge">35mm</span></label>
+                <input type="range" id="d-in" min="10" max="120" value="35" style="width:100%;">
+            </div>
+            <div class="input-wrap">
+                <label>Position X <span id="x-txt" class="badge">80mm</span></label>
+                <input type="range" id="x-in" min="0" max="280" value="80" style="width:100%;">
+            </div>
+            <div class="input-wrap">
+                <label>Position Y <span id="y-txt" class="badge">80mm</span></label>
+                <input type="range" id="y-in" min="0" max="280" value="80" style="width:100%;">
+            </div>
+
+            <div class="input-wrap" style="background:#f0f9ff; border: 1px solid #0ea5e9;">
+                <label style="font-size:11px;">Thickness: <input type="number" id="t-in" value="10" style="width:60px; float:right;"></label><br><br>
+                <label style="font-size:11px;">Qty: <input type="number" id="qty-in" value="1" style="width:60px; float:right;"></label><br><br>
+                <label style="font-size:11px;">Rate/KG: <input type="number" id="rate-in" value="85" style="width:60px; float:right;"></label>
+            </div>
+            
+            <button style="width:100%; padding:15px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.print()">PRINT BLUEPRINT</button>
+        </aside>
+
+        <main class="workspace">
+            <div class="a4-page">
+                <div style="width:100%; border-bottom: 3px solid #000; padding-bottom:10px; margin-bottom: 20px; display: flex; justify-content: space-between;">
+                    <div>
+                        <h1 style="margin:0; font-size: 22px;">TECHNICAL DRAWING SHEET</h1>
+                        <p style="margin:0; font-size: 11px; color: #555;">Precision Plate Layout | Ranvijay Kumar</p>
+                    </div>
+                    <span id="header-ref" style="font-size: 11px; font-weight: bold; border: 1px solid #000; padding: 4px;"></span>
+                </div>
+
+                <div class="plate" id="plate-surface">
+                    <div class="fixed-l-h"></div><div class="fixed-l-v"></div>
+                    <div class="label fixed-lbl" style="left:50%; top:10px;">280 mm</div>
+                    <div class="label fixed-lbl" style="left:10px; top:50%; transform: rotate(-90deg) translate(0,-15px);">280 mm</div>
+                    
+                    <div id="center-hole-obj" class="center-hole"></div>
+                    
+                    <div id="line-h" class="line dyn-l-x"></div>
+                    <div id="line-v" class="line dyn-l-y"></div>
+                    <div id="lbl-x" class="label dyn-lbl"></div>
+                    <div id="lbl-y" class="label dyn-lbl"></div>
+                    
+                    <div id="gap-line" class="line"><div id="gap-label" class="label"></div></div>
+                    
+                    <div id="dynamic-hole"></div>
+                </div>
+
+                <table style="width:100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; border: 2px solid #000;">
+                    <tr style="background:#000; color:#fff;">
+                        <th style="padding:8px; border:1px solid #000; text-align:left;">PARAMETER</th>
+                        <th style="padding:8px; border:1px solid #000; text-align:left;">DIMENSION / RESULT</th>
+                    </tr>
+                    <tr><td style="padding:6px; border:1px solid #000;">Hole Center (X, Y)</td><td style="padding:6px; border:1px solid #000;" id="rep-xy">--</td></tr>
+                    <tr><td style="padding:6px; border:1px solid #000;">Radial Clearance (Gap)</td><td style="padding:6px; border:1px solid #000; color:#2563eb; font-weight:bold;" id="rep-gap">--</td></tr>
+                    <tr><td style="padding:6px; border:1px solid #000;">Unit Weight x Qty</td><td style="padding:6px; border:1px solid #000;"><span id="rep-w"></span> (<span id="rep-qty">1</span> Nos)</td></tr>
+                    <tr style="background:#000; color:#fff;"><td style="padding:8px; border:1px solid #000; font-weight:bold;">ESTIMATED TOTAL (GST Inc.)</td><td style="padding:8px; border:1px solid #000; font-weight:bold;" id="rep-total">--</td></tr>
+                </table>
+
+                <div style="width:100%; margin-top: auto; border: 2px solid #000; display: flex;">
+                    <div style="flex:2; padding:15px; border-right:2px solid #000; font-size:11px;">
+                        <strong>DESIGNED BY: RANVIJAY KUMAR</strong><br>
+                        Contact: +91 7800817675<br>
+                        <span id="footer-date"></span>
+                    </div>
+                    <div style="flex:1; text-align:center; padding-top:20px;">
+                        <div style="border-bottom:1px solid #000; width:80%; margin:0 auto;"></div>
+                        <span style="font-size:9px; font-weight:bold;">SIGNATURE</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const dIn = document.getElementById('d-in'), xIn = document.getElementById('x-in'), 
+              yIn = document.getElementById('y-in'), cdIn = document.getElementById('cd-in'),
+              tIn = document.getElementById('t-in'), qtyIn = document.getElementById('qty-in'),
+              rateIn = document.getElementById('rate-in'), unitSel = document.getElementById('unit-sel');
+
+        function refresh() {
+            const unit = unitSel.value;
+            const conv = (unit === 'in') ? 0.0393701 : 1;
+            const d = parseFloat(dIn.value), x = parseFloat(xIn.value), y = parseFloat(yIn.value),
+                  cd = parseFloat(cdIn.value), t = parseFloat(tIn.value), qty = parseInt(qtyIn.value) || 1,
+                  rate = parseFloat(rateIn.value);
+
+            // Update Circles
+            document.getElementById('center-hole-obj').style.width = document.getElementById('center-hole-obj').style.height = (cd * 2) + "px";
+            document.getElementById('center-hole-obj').innerText = "Ø" + (cd * conv).toFixed(1) + unit;
+            
+            document.getElementById('dynamic-hole').style.width = document.getElementById('dynamic-hole').style.height = (d * 2) + "px";
+            document.getElementById('dynamic-hole').style.left = (x * 2) + "px";
+            document.getElementById('dynamic-hole').style.top = (y * 2) + "px";
+            document.getElementById('dynamic-hole').innerText = "Ø" + (d * conv).toFixed(1);
+
+            // Update Coordinate Measurement Lines
+            document.getElementById('line-h').style.top = (y * 2) + "px";
+            document.getElementById('line-h').style.width = (x * 2) + "px";
+            document.getElementById('line-v').style.left = (x * 2) + "px";
+            document.getElementById('line-v').style.height = (y * 2) + "px";
+            
+            document.getElementById('lbl-x').style.left = x + "px";
+            document.getElementById('lbl-x').style.top = (y * 2) + "px";
+            document.getElementById('lbl-x').innerText = "X: " + (x * conv).toFixed(1) + unit;
+            
+            document.getElementById('lbl-y').style.left = (x * 2) + "px";
+            document.getElementById('lbl-y').style.top = y + "px";
+            document.getElementById('lbl-y').innerText = "Y: " + (y * conv).toFixed(1) + unit;
+
+            // Gap Calculation & Measurement
+            const dx = x - 140, dy = y - 140;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            const gap = Math.abs(dist - (cd/2) - (d/2));
+            const angle = Math.atan2(dy, dx);
+            const sX = 140 + Math.cos(angle) * (cd/2);
+            const sY = 140 + Math.sin(angle) * (cd/2);
+
+            document.getElementById('gap-line').style.left = (sX * 2) + "px";
+            document.getElementById('gap-line').style.top = (sY * 2) + "px";
+            document.getElementById('gap-line').style.width = (Math.max(0, dist - (cd/2) - (d/2)) * 2) + "px";
+            document.getElementById('gap-line').style.transform = `rotate(${angle}rad)`;
+            document.getElementById('gap-label').innerText = (gap * conv).toFixed(2) + unit;
+
+            // Billing
+            const weight = ((280 * 280 * t) - (Math.PI * (cd/2)**2 * t) - (Math.PI * (d/2)**2 * t)) * 0.00000785 * qty;
+            const cost = (weight * rate) * 1.18;
+
+            // UI
+            document.getElementById('cd-txt').innerText = (cd * conv).toFixed(1) + unit;
+            document.getElementById('d-txt').innerText = (d * conv).toFixed(1) + unit;
+            document.getElementById('x-txt').innerText = (x * conv).toFixed(1) + unit;
+            document.getElementById('y-txt').innerText = (y * conv).toFixed(1) + unit;
+            document.getElementById('rep-xy').innerText = "X=" + (x*conv).toFixed(1) + ", Y=" + (y*conv).toFixed(1);
+            document.getElementById('rep-gap').innerText = (gap*conv).toFixed(2) + " " + unit;
+            document.getElementById('rep-w').innerText = weight.toFixed(3) + " kg";
+            document.getElementById('rep-qty').innerText = qty;
+            document.getElementById('rep-total').innerText = "₹ " + cost.toLocaleString('en-IN', {maximumFractionDigits:2});
+            
+            document.getElementById('footer-date').innerText = "Generated: " + new Date().toLocaleString();
+            document.getElementById('header-ref').innerText = "REF: BK-" + new Date().getTime().toString().slice(-6);
+        }
+
+        [dIn, xIn, yIn, cdIn, tIn, qtyIn, rateIn, unitSel].forEach(el => el.addEventListener('input', refresh));
+        refresh();
+    </script>
+</body>
+</html>

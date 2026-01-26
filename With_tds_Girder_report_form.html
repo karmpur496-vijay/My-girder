@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decorative Invoice - Ranvijay Kumar</title>
+    <style>
+        :root { 
+            --primary: #1e3a8a; 
+            --accent: #b45309; 
+            --bg: #f3f4f6; 
+            --white: #ffffff;
+            --grad: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: var(--bg); margin: 0; padding: 10px; color: #374151; }
+
+        .card {
+            background: var(--white);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            background: var(--grad);
+            color: white;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .form-body { padding: 15px; }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .field label { 
+            display: block; 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            font-weight: 700; 
+            margin-bottom: 5px; 
+            color: var(--primary);
+        }
+
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            border: 2px solid #e5e7eb; 
+            border-radius: 8px; 
+            font-size: 14px;
+        }
+        input:focus { border-color: var(--accent); outline: none; }
+
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+        .btn { 
+            flex: 1 1 120px;
+            padding: 12px; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+        .btn-add { background: var(--primary); color: white; }
+        .btn-print { background: #10b981; color: white; }
+        .btn-csv { background: var(--accent); color: white; }
+
+        /* Invoice Preview */
+        .invoice-box {
+            background: white;
+            padding: 20px;
+            border-top: 8px solid var(--primary);
+        }
+
+        .bill-head { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .brand h1 { margin: 0; color: var(--primary); font-size: 22px; }
+        .brand p { margin: 2px 0; font-size: 11px; color: #6b7280; }
+
+        .table-wrap { overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; }
+        th { background: #f8fafc; padding: 10px; border-bottom: 2px solid var(--primary); font-size: 10px; color: var(--primary); }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 12px; }
+
+        .summary-wrap { display: flex; justify-content: flex-end; margin-top: 15px; }
+        .summary-table { width: 100%; max-width: 280px; }
+        .sum-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+        .grand-total { background: var(--primary); color: white; padding: 10px; border-radius: 5px; font-weight: bold; margin-top: 10px; }
+
+        @media print {
+            .card:not(.invoice-box), .btn-group, .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .invoice-box { border: none; box-shadow: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="card-header">📝 बिल की जानकारी भरें (Entry Form)</div>
+    <div class="form-body">
+        <div class="input-grid">
+            <div class="field"><label>Invoice Date</label><input type="date" id="f-date" oninput="updateHeader()"></div>
+            <div class="field"><label>Invoice No.</label><input type="text" id="f-invno" value="001" oninput="updateHeader()"></div>
+            <div class="field"><label>Location</label><input type="text" id="f-loc" placeholder="Site Name"></div>
+            <div class="field"><label>Meters (B)</label><input type="number" id="f-mtr"></div>
+            <div class="field"><label>Strand (C)</label><input type="number" id="f-lrpc"></div>
+            <div class="field"><label>Rate / Ton</label><input type="number" id="f-rtn"></div>
+            <div class="field"><label>Nos (G)</label><input type="number" id="f-nos" value="1"></div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-add" onclick="addData()">+ Add Item</button>
+            <button class="btn btn-csv" onclick="exportCSV()">Excel</button>
+            <button class="btn btn-print" onclick="window.print()">Print PDF</button>
+        </div>
+    </div>
+</div>
+
+<div class="card invoice-box">
+    <div class="bill-head">
+        <div class="brand">
+            <h1>TAX INVOICE</h1>
+            <p><strong>Ranvijay Kumar</strong> | Ghazipur, UP</p>
+            <p>Contact: +91 7800817675</p>
+        </div>
+        <div style="text-align: right; font-size: 12px;">
+            <p><strong>Date:</strong> <span id="dispDate">---</span></p>
+            <p><strong>Inv No:</strong> #<span id="dispInv">001</span></p>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>SN</th>
+                    <th style="text-align:left">Location</th>
+                    <th>Mtrs</th>
+                    <th>Strand</th>
+                    <th>Wt/Unit</th>
+                    <th>Rate</th>
+                    <th>Nos</th>
+                    <th>Ton</th>
+                    <th>Total (₹)</th>
+                    <th class="no-print"></th>
+                </tr>
+            </thead>
+            <tbody id="invoice-body"></tbody>
+        </table>
+    </div>
+
+    <div class="summary-wrap">
+        <div class="summary-table">
+            <div class="sum-row"><span>Gross:</span><span id="h30">0.00</span></div>
+            <div class="sum-row"><span>Advance:</span><input type="number" id="h32" value="0" oninput="calcTotal()" style="width:70px; text-align:right;"></div>
+            <div class="sum-row" style="color:#b45309"><span>TDS (1%):</span><span id="h31">0.00</span></div>
+            <div class="grand-total">
+                <div style="display:flex; justify-content:space-between;">
+                    <span>NET:</span><span id="h33">₹ 0.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let rows = [];
+
+    // Initialize Current Date
+    window.onload = function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('f-date').value = today;
+        updateHeader();
+    }
+
+    function updateHeader() {
+        document.getElementById('dispDate').innerText = document.getElementById('f-date').value;
+        document.getElementById('dispInv').innerText = document.getElementById('f-invno').value;
+    }
+
+    function addData() {
+        const loc = document.getElementById('f-loc').value;
+        const mtr = parseFloat(document.getElementById('f-mtr').value) || 0;
+        const lrpc = parseFloat(document.getElementById('f-lrpc').value) || 0;
+        const rtn = parseFloat(document.getElementById('f-rtn').value) || 0;
+        const nos = parseFloat(document.getElementById('f-nos').value) || 0;
+
+        if(!loc || mtr <= 0) return alert("Sahi data bharen!");
+
+        const wtu = (mtr * lrpc * 0.78) / 1000;
+        const tton = wtu * nos;
+        const total = tton * rtn;
+
+        rows.push({ loc, mtr, lrpc, wtu, rtn, nos, tton, total });
+        renderTable();
+        
+        document.getElementById('f-loc').value = "";
+        document.getElementById('f-mtr').value = "";
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById("invoice-body");
+        tbody.innerHTML = "";
+        let gross = 0;
+        rows.forEach((row, index) => {
+            gross += row.total;
+            tbody.innerHTML += `<tr>
+                <td>${index+1}</td>
+                <td style="text-align:left; font-weight:bold;">${row.loc}</td>
+                <td>${row.mtr}</td>
+                <td>${row.lrpc}</td>
+                <td>${row.wtu.toFixed(3)}</td>
+                <td>${row.rtn}</td>
+                <td>${row.nos}</td>
+                <td>${row.tton.toFixed(3)}</td>
+                <td>${row.total.toLocaleString('en-IN')}</td>
+                <td class="no-print"><button onclick="deleteRow(${index})" style="color:red; border:none; background:none;">×</button></td>
+            </tr>`;
+        });
+        calcTotal(gross);
+    }
+
+    function deleteRow(i) { rows.splice(i, 1); renderTable(); }
+
+    function calcTotal(gAmount) {
+        let gross = gAmount !== undefined ? gAmount : rows.reduce((a, b) => a + b.total, 0);
+        const adv = parseFloat(document.getElementById("h32").value) || 0;
+        const tds = (gross - adv) > 0 ? (gross - adv) * 0.01 : 0;
+        document.getElementById("h30").innerText = gross.toLocaleString('en-IN');
+        document.getElementById("h31").innerText = tds.toFixed(2);
+        document.getElementById("h33").innerText = "₹ " + (gross - tds - adv).toLocaleString('en-IN');
+    }
+
+    function exportCSV() {
+        let csv = "S.N,Location,Meters,Strand,Wt/Unit,Rate,Nos,Ton,Total\n";
+        rows.forEach((r, i) => { csv += `${i+1},${r.loc},${r.mtr},${r.lrpc},${r.wtu.toFixed(3)},${r.rtn},${r.nos},${r.tton.toFixed(3)},${r.total}\n`; });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Bill_${document.getElementById('f-invno').value}.csv`;
+        a.click();
+    }
+</script>
+</body>
+</html>
