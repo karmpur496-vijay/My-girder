@@ -1,0 +1,54 @@
+:root{
+  --btn-primary: #2563eb;   /* blue */
+  --btn-secondary: #f59e0b; /* amber */
+  --btn-success: #16a34a;   /* green */
+  --btn-danger: #ef4444;    /* red */
+  --btn-muted: #64748b;     /* gray */
+  --btn-text: #ffffff;
+  --btn-radius: 10px;
+  --btn-shadow: 0 6px 18px rgba(2,6,23,0.08);
+}
+
+.btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: var(--btn-radius);
+  border: none;
+  background: var(--btn-primary);
+  color: var(--btn-text);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  box-shadow: var(--btn-shadow);
+  text-decoration: none; /* for anchor buttons */
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.btn:hover{ transform: translateY(-3px); box-shadow: 0 14px 30px rgba(2,6,23,0.10); }
+.btn:active{ transform: translateY(-1px); box-shadow: 0 8px 20px rgba(2,6,23,0.09); }
+.btn:focus{ outline: 3px solid rgba(37,99,235,0.18); outline-offset: 2px; }
+.btn[disabled]{ opacity: .65; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-primary, .btn-save { background: var(--btn-primary); color: var(--btn-text); }
+.btn-secondary, .btn-warning { background: var(--btn-secondary); color: #111; }
+.btn-success, .btn-print { background: var(--btn-success); color: var(--btn-text); }
+.btn-danger { background: var(--btn-danger); color: var(--btn-text); }
+.btn-muted, .btn-home, .btn-back { background: var(--btn-muted); color: var(--btn-text); }
+.btn-excel { background: #27ae60; color: var(--btn-text); }
+.btn-csv { background: var(--btn-secondary); color: #111; }
+
+.btn-outline{ background: transparent; border: 1px solid rgba(0,0,0,0.08); color: inherit; box-shadow: none; }
+.btn-icon{ padding: 0.45rem 0.65rem; }
+
+.btn-sm{ padding: 0.35rem 0.6rem; font-size: 13px; border-radius: 8px; }
+.btn-lg{ padding: 0.9rem 1.2rem; font-size: 16px; border-radius: 12px; }
+
+/* keep text readable on small screens */
+@media (max-width:600px){
+  .btn{ padding: 0.5rem 0.75rem; font-size: 14px; }
+}
