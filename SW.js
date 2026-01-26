@@ -1,114 +1,74 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Work Report</title>
-    <style>
-        :root {
-            --primary: #1e3a8a;
-            --secondary: #f39c12;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #1e293b;
-            --border: #e2e8f0;
+ url=https://github.com/karmpur496-vijay/My-girder/blob/main/SW.js
+// Service Worker for My-girder (caching + network-first fallback)
+const CACHE_NAME = 'girder-cache-v1';
+const CORE_ASSETS = [
+  '/', '/index.html',
+  '/daily_work.html',
+  '/monthly_summary.html',
+  '/With_tds_Girder_report_form.html',
+  '/Without_tds_report.html',
+  '/Clint_bank_add_report.html',
+  '/technical_drawing.html',
+  '/manifest.json',
+  '/index.html', '/SW.js'
+];
+
+// Install: cache core assets
+self.addEventListener('install', event => {
+  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(CORE_ASSETS))
+  );
+});
+
+// Activate: cleanup old caches
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+// Fetch: Try network first, fallback to cache. For navigation, serve index.html for SPA-like behavior.
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  // Only handle GET requests
+  if (req.method !== 'GET') return;
+
+  // Navigation requests -> network first, fallback to cached index.html
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req).then(res => {
+        // Optionally update cache with latest index
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy));
+        return res;
+      }).catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // For other assets: try cache first, then network, then cache fallback
+  event.respondWith(
+    caches.match(req).then(cached => {
+      if (cached) return cached;
+      return fetch(req).then(networkRes => {
+        // Cache responses for same-origin requests
+        if (networkRes && networkRes.status === 200 && networkRes.type === 'basic') {
+          const clone = networkRes.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
         }
-
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            margin: 0; padding: 15px; 
+        return networkRes;
+      }).catch(() => {
+        // Optional: provide a generic fallback for images or pages
+        if (req.destination === 'image') {
+          // return a small inline fallback or nothing
+          return new Response('', {status: 404, statusText: 'Not Found'});
         }
-
-        .header { background: var(--primary); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; }
-        .back-btn { color: white; text-decoration: none; font-size: 20px; margin-right: 15px; }
-
-        .form-card { background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; }
-
-        .btn-save { background: var(--secondary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        
-        .report-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .report-table th { background: #f1f5f9; padding: 12px; text-align: left; font-size: 12px; color: var(--muted); }
-        .report-table td { padding: 12px; border-top: 1px solid var(--border); font-size: 14px; }
-        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #dcfce7; color: #166534; }
-    </style>
-</head>
-<body>
-
-    <div class="header">
-        <a href="index.html" class="back-btn">⬅</a>
-        <h2 style="margin:0; font-size: 18px;">Daily Work Entry</h2>
-    </div>
-
-    <div class="form-card">
-        <div class="form-group">
-            <label>तारीख (Date)</label>
-            <input type="date" id="workDate">
-        </div>
-        <div class="form-group">
-            <label>गर्डर नंबर (Girder No.)</label>
-            <input type="text" id="girderNo" placeholder="जैसे: G-01, S-12">
-        </div>
-        <div class="form-group">
-            <label>कार्य का प्रकार (Work Type)</label>
-            <select id="workType">
-                <option value="Casting">Casting (ढलाई)</option>
-                <option value="Stressing">Stressing (स्ट्रेसिंग)</option>
-                <option value="Grouting">Grouting (ग्राउटिंग)</option>
-                <option value="Shifting">Shifting (शिफ्टिंग)</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>रिमार्क (Remark)</label>
-            <textarea id="remark" rows="2" placeholder="कोई विशेष जानकारी..."></textarea>
-        </div>
-        <button class="btn-save" onclick="saveData()">डेटा सेव करें</button>
-    </div>
-
-    <h3 style="font-size: 16px;">हालिया एंट्री (Recent Entries)</h3>
-    <table class="report-table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Girder</th>
-                <th>Work</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody id="dataTable">
-            </tbody>
-    </table>
-
-    <script>
-        // आज की तारीख ऑटो-सेट करें
-        document.getElementById('workDate').valueAsDate = new Date();
-
-        function saveData() {
-            const date = document.getElementById('workDate').value;
-            const girder = document.getElementById('girderNo').value;
-            const type = document.getElementById('workType').value;
-            const remark = document.getElementById('remark').value;
-
-            if(!girder) { alert("गर्डर नंबर डालें!"); return; }
-
-            const table = document.getElementById('dataTable');
-            const row = table.insertRow(0);
-            row.innerHTML = `
-                <td>${date}</td>
-                <td><b>${girder}</b></td>
-                <td>${type}</td>
-                <td><span class="status-badge">Done</span></td>
-            `;
-
-            // फॉर्म साफ़ करें
-            document.getElementById('girderNo').value = "";
-            document.getElementById('remark').value = "";
-            alert("Entry Saved Successfully!");
-        }
-    </script>
-</body>
-</html>
+        return new Response('Offline', { status: 503, statusText: 'Offline' });
+      });
+    })
+  );
+});
