@@ -7,12 +7,12 @@
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     h1 { color: #333; }
-    table { border-collapse: collapse; width: 100%; max-width: 700px; margin-bottom: 20px; }
+    table { border-collapse: collapse; width: 100%; max-width: 900px; margin-bottom: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background: #f5f5f5; }
     .summary { margin-bottom: 20px; }
-    .chart-container { width: 100%; max-width: 800px; }
-    .controls { margin-bottom: 16px; }
+    .chart-container { width: 100%; max-width: 900px; }
+    .controls { margin-bottom: 16px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     input.token { width: 320px; padding: 6px; }
     button { padding: 6px 10px; }
   </style>
@@ -21,10 +21,11 @@
   <h1>Monthly Summary — January 2026</h1>
 
   <div class="controls">
-    <label for="token">GitHub Token (optional, paste a personal access token to access private repos):</label><br>
+    <label for="token">GitHub Token (optional — only for private repo access):</label>
     <input id="token" class="token" type="password" placeholder="ghp_..." />
-    <button id="loadBtn">Load data from repository</button>
+    <button id="loadBtn">Load data from repository (API)</button>
     <button id="loadRawBtn">Load public raw (no token)</button>
+    <button id="exportPdfBtn">Export to PDF</button>
   </div>
 
   <div class="summary" id="summary">
@@ -51,22 +52,22 @@
 
   <h2>Trends</h2>
   <div class="chart-container">
-    <canvas id="trendChart" width="800" height="400"></canvas>
+    <canvas id="trendChart" width="900" height="400"></canvas>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    // Utility: render table and chart given parsed records
+    // Render table + summary + chart
     function renderTable(records) {
       const tbody = document.getElementById('data-table');
       tbody.innerHTML = '';
       records.forEach(r => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${r.date}</td><td>${r.girder}</td><td>${r.wedges}</td><td>${r.threading}</td><td>${r.stressing}</td><td>${r.grouting}</td><td>${r.labor}</td>`;
+        tr.innerHTML = `<td>${r.Date}</td><td>${r['Girder No']}</td><td>${r.Wedges}</td><td>${r.Threading}</td><td>${r.Stressing}</td><td>${r.Grouting}</td><td>${r.Labor}</td>`;
         tbody.appendChild(tr);
       });
 
-      // Update summary
       const summary = document.getElementById('summary');
       if (records.length === 0) {
         summary.innerHTML = '<p>No records found.</p>';
@@ -74,11 +75,11 @@
       }
 
       const totals = records.reduce((acc, r) => {
-        acc.wedges += r.wedges;
-        acc.threading += r.threading;
-        acc.stressing += r.stressing;
-        acc.grouting += r.grouting;
-        acc.labor += r.labor;
+        acc.wedges += Number(r.Wedges || 0);
+        acc.threading += Number(r.Threading || 0);
+        acc.stressing += Number(r.Stressing || 0);
+        acc.grouting += Number(r.Grouting || 0);
+        acc.labor += Number(r.Labor || 0);
         return acc;
       }, {wedges:0, threading:0, stressing:0, grouting:0, labor:0});
 
@@ -95,11 +96,11 @@
           <li>Total Labor: ${totals.labor} (avg ${avg('labor')})</li>
         </ul>`;
 
-      // Draw chart
-      const labels = records.map(r => r.date);
-      const wedges = records.map(r => r.wedges);
-      const threading = records.map(r => r.threading);
-      const labor = records.map(r => r.labor);
+      // Chart
+      const labels = records.map(r => r.Date);
+      const wedges = records.map(r => Number(r.Wedges || 0));
+      const threading = records.map(r => Number(r.Threading || 0));
+      const labor = records.map(r => Number(r.Labor || 0));
 
       const ctx = document.getElementById('trendChart').getContext('2d');
       if (window._chartInstance) window._chartInstance.destroy();
@@ -117,39 +118,36 @@
       });
     }
 
-    // Provided function adjusted: returns parsed records with numeric conversion
+    // Fetch via GitHub REST API and parse with PapaParse
     async function loadGitHubData(token) {
-        const url = "https://api.github.com/repos/karmpur496-vijay/My-girder/contents/data/girder_reports.csv";
-        const headers = {};
-        if (token) headers['Authorization'] = `token ${token}`;
+      const url = 'https://api.github.com/repos/karmpur496-vijay/My-girder/contents/data/girder_reports.csv';
+      const headers = {};
+      if (token) headers['Authorization'] = `token ${token}`;
 
-        const response = await fetch(url, { headers });
-        if (!response.ok) {
-          const text = await response.text();
-          throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${text}`);
-        }
+      const response = await fetch(url, { headers });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${text}`);
+      }
 
-        const fileData = await response.json();
-        // fileData.content is base64 encoded
-        const csvContent = atob(fileData.content.replace(/\n/g, ''));
-        const lines = csvContent.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        if (lines.length <= 1) return [];
+      const fileData = await response.json();
+      const csvContent = atob((fileData.content || '').replace(/\s+/g, ''));
 
-        const rows = lines.slice(1); // skip header
-        const reports = rows.map(row => {
-            const cols = row.split(',').map(c => c.trim());
-            return {
-                date: cols[0] || '',
-                girder: cols[1] || '',
-                wedges: Number(cols[2] || 0),
-                threading: Number(cols[3] || 0),
-                stressing: Number(cols[4] || 0),
-                grouting: Number(cols[5] || 0),
-                labor: Number(cols[6] || 0)
-            };
-        }).filter(r => r.date !== '');
+      // Use PapaParse to parse CSV reliably (handles quotes, commas inside fields, etc.)
+      const parsed = Papa.parse(csvContent, { header: true, skipEmptyLines: true, dynamicTyping: true });
+      if (parsed.errors && parsed.errors.length) console.warn('PapaParse warnings/errors:', parsed.errors);
+      return parsed.data;
+    }
 
-        return reports;
+    // Load raw via raw.githubusercontent and parse with PapaParse
+    async function loadRawData() {
+      const rawUrl = 'https://raw.githubusercontent.com/karmpur496-vijay/My-girder/main/data/girder_reports.csv';
+      const res = await fetch(rawUrl);
+      if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
+      const csv = await res.text();
+      const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true, dynamicTyping: true });
+      if (parsed.errors && parsed.errors.length) console.warn('PapaParse warnings/errors:', parsed.errors);
+      return parsed.data;
     }
 
     document.getElementById('loadBtn').addEventListener('click', async () => {
@@ -162,33 +160,23 @@
       }
     });
 
-    // Fallback: load raw file from raw.githubusercontent (public)
     document.getElementById('loadRawBtn').addEventListener('click', async () => {
       try {
-        const rawUrl = 'https://raw.githubusercontent.com/karmpur496-vijay/My-girder/main/data/girder_reports.csv';
-        const res = await fetch(rawUrl);
-        if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
-        const csv = await res.text();
-        const lines = csv.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        const rows = lines.slice(1);
-        const records = rows.filter(r => r.trim() !== '').map(row => {
-          const cols = row.split(',').map(c => c.trim());
-          return {
-            date: cols[0] || '',
-            girder: cols[1] || '',
-            wedges: Number(cols[2] || 0),
-            threading: Number(cols[3] || 0),
-            stressing: Number(cols[4] || 0),
-            grouting: Number(cols[5] || 0),
-            labor: Number(cols[6] || 0)
-          };
-        }).filter(r => r.date !== '');
-
+        const records = await loadRawData();
         renderTable(records);
       } catch (err) {
         alert('Failed to load raw file: ' + err.message);
       }
     });
-  <\/script>
+
+    // Export to PDF (uses browser print; user can Save as PDF)
+    document.getElementById('exportPdfBtn').addEventListener('click', () => {
+      window.print();
+    });
+
+    // Optionally preload public data on page load
+    // (uncomment to auto-load)
+    // loadRawData().then(renderTable).catch(e => console.warn(e));
+  </script>
 </body>
 </html>
