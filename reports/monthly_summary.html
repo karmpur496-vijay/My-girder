@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Monthly Summary - January 2026</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    table { border-collapse: collapse; width: 100%; max-width: 700px; margin-bottom: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #f5f5f5; }
+    .summary { margin-bottom: 20px; }
+    .chart-container { width: 100%; max-width: 800px; }
+  </style>
+</head>
+<body>
+  <h1>Monthly Summary — January 2026</h1>
+  <div class="summary">
+    <p>This report summarizes entries from <code>data/girder_reports.csv</code> for 2026-01-20 to 2026-01-24.</p>
+    <ul>
+      <li>Total records: 5</li>
+      <li>Total Wedges: 52 (avg 10.4)</li>
+      <li>Total Threading: 62 (avg 12.4)</li>
+      <li>Total Stressing: 5 (avg 1.0)</li>
+      <li>Total Grouting: 5 (avg 1.0)</li>
+      <li>Total Labor: 74 (avg 14.8)</li>
+    </ul>
+  </div>
+
+  <h2>Details</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Girder No</th>
+        <th>Wedges</th>
+        <th>Threading</th>
+        <th>Stressing</th>
+        <th>Grouting</th>
+        <th>Labor</th>
+      </tr>
+    </thead>
+    <tbody id="data-table">
+      <!-- Rows injected by script -->
+    </tbody>
+  </table>
+
+  <h2>Trends</h2>
+  <div class="chart-container">
+    <canvas id="trendChart" width="800" height="400"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Embedded data copied from data/girder_reports.csv
+    const records = [
+      {date: '2026-01-20', girder: 'G-01', wedges: 10, threading: 12, stressing: 1, grouting: 1, labor: 15},
+      {date: '2026-01-21', girder: 'G-02', wedges: 10, threading: 12, stressing: 1, grouting: 1, labor: 14},
+      {date: '2026-01-22', girder: 'G-03', wedges: 12, threading: 12, stressing: 1, grouting: 1, labor: 16},
+      {date: '2026-01-23', girder: 'G-04', wedges: 10, threading: 14, stressing: 1, grouting: 1, labor: 15},
+      {date: '2026-01-24', girder: 'G-05', wedges: 10, threading: 12, stressing: 1, grouting: 1, labor: 14}
+    ];
+
+    const tbody = document.getElementById('data-table');
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${r.date}</td><td>${r.girder}</td><td>${r.wedges}</td><td>${r.threading}</td><td>${r.stressing}</td><td>${r.grouting}</td><td>${r.labor}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    const labels = records.map(r => r.date);
+    const wedges = records.map(r => r.wedges);
+    const threading = records.map(r => r.threading);
+    const labor = records.map(r => r.labor);
+
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Wedges', data: wedges, borderColor: '#1f77b4', backgroundColor: 'rgba(31,119,180,0.1)', tension: 0.2 },
+          { label: 'Threading', data: threading, borderColor: '#ff7f0e', backgroundColor: 'rgba(255,127,14,0.1)', tension: 0.2 },
+          { label: 'Labor', data: labor, borderColor: '#2ca02c', backgroundColor: 'rgba(44,160,44,0.1)', tension: 0.2 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  </script>
+</body>
+</html>
