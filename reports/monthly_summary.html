@@ -12,20 +12,23 @@
     th { background: #f5f5f5; }
     .summary { margin-bottom: 20px; }
     .chart-container { width: 100%; max-width: 800px; }
+    .controls { margin-bottom: 16px; }
+    input.token { width: 320px; padding: 6px; }
+    button { padding: 6px 10px; }
   </style>
 </head>
 <body>
   <h1>Monthly Summary — January 2026</h1>
-  <div class="summary">
-    <p>This report summarizes entries from <code>data/girder_reports.csv</code> for 2026-01-20 to 2026-01-24.</p>
-    <ul>
-      <li>Total records: 5</li>
-      <li>Total Wedges: 52 (avg 10.4)</li>
-      <li>Total Threading: 62 (avg 12.4)</li>
-      <li>Total Stressing: 5 (avg 1.0)</li>
-      <li>Total Grouting: 5 (avg 1.0)</li>
-      <li>Total Labor: 74 (avg 14.8)</li>
-    </ul>
+
+  <div class="controls">
+    <label for="token">GitHub Token (optional, paste a personal access token to access private repos):</label><br>
+    <input id="token" class="token" type="password" placeholder="ghp_..." />
+    <button id="loadBtn">Load data from repository</button>
+    <button id="loadRawBtn">Load public raw (no token)</button>
+  </div>
+
+  <div class="summary" id="summary">
+    <p>Click "Load data from repository" to fetch <code>data/girder_reports.csv</code> from the repo.</p>
   </div>
 
   <h2>Details</h2>
@@ -53,44 +56,139 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Embedded data copied from data/girder_reports.csv
-    const records = [
-      {date: '2026-01-20', girder: 'G-01', wedges: 10, threading: 12, stressing: 1, grouting: 1, labor: 15},
-      {date: '2026-01-21', girder: 'G-02', wedges: 10, threading: 12, stressing: 1, grouting: 1, labor: 14},
-      {date: '2026-01-22', girder: 'G-03', wedges: 12, threading: 12, stressing: 1, grouting: 1, labor: 16},
-      {date: '2026-01-23', girder: 'G-04', wedges: 10, threading: 14, stressing: 1, grouting: 1, labor: 15},
-      {date: '2026-01-24', girder: 'G-05', wedges: 10, threading: 12, stressing: 1, grouting: 1, labor: 14}
-    ];
+    // Utility: render table and chart given parsed records
+    function renderTable(records) {
+      const tbody = document.getElementById('data-table');
+      tbody.innerHTML = '';
+      records.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.date}</td><td>${r.girder}</td><td>${r.wedges}</td><td>${r.threading}</td><td>${r.stressing}</td><td>${r.grouting}</td><td>${r.labor}</td>`;
+        tbody.appendChild(tr);
+      });
 
-    const tbody = document.getElementById('data-table');
-    records.forEach(r => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${r.date}</td><td>${r.girder}</td><td>${r.wedges}</td><td>${r.threading}</td><td>${r.stressing}</td><td>${r.grouting}</td><td>${r.labor}</td>`;
-      tbody.appendChild(tr);
-    });
+      // Update summary
+      const summary = document.getElementById('summary');
+      if (records.length === 0) {
+        summary.innerHTML = '<p>No records found.</p>';
+        return;
+      }
 
-    const labels = records.map(r => r.date);
-    const wedges = records.map(r => r.wedges);
-    const threading = records.map(r => r.threading);
-    const labor = records.map(r => r.labor);
+      const totals = records.reduce((acc, r) => {
+        acc.wedges += r.wedges;
+        acc.threading += r.threading;
+        acc.stressing += r.stressing;
+        acc.grouting += r.grouting;
+        acc.labor += r.labor;
+        return acc;
+      }, {wedges:0, threading:0, stressing:0, grouting:0, labor:0});
 
-    const ctx = document.getElementById('trendChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [
-          { label: 'Wedges', data: wedges, borderColor: '#1f77b4', backgroundColor: 'rgba(31,119,180,0.1)', tension: 0.2 },
-          { label: 'Threading', data: threading, borderColor: '#ff7f0e', backgroundColor: 'rgba(255,127,14,0.1)', tension: 0.2 },
-          { label: 'Labor', data: labor, borderColor: '#2ca02c', backgroundColor: 'rgba(44,160,44,0.1)', tension: 0.2 }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'top' } },
-        scales: { y: { beginAtZero: true } }
+      const avg = (k) => (totals[k] / records.length).toFixed(1);
+
+      summary.innerHTML = `
+        <p>This report summarizes <code>data/girder_reports.csv</code> from the repository.</p>
+        <ul>
+          <li>Total records: ${records.length}</li>
+          <li>Total Wedges: ${totals.wedges} (avg ${avg('wedges')})</li>
+          <li>Total Threading: ${totals.threading} (avg ${avg('threading')})</li>
+          <li>Total Stressing: ${totals.stressing} (avg ${avg('stressing')})</li>
+          <li>Total Grouting: ${totals.grouting} (avg ${avg('grouting')})</li>
+          <li>Total Labor: ${totals.labor} (avg ${avg('labor')})</li>
+        </ul>`;
+
+      // Draw chart
+      const labels = records.map(r => r.date);
+      const wedges = records.map(r => r.wedges);
+      const threading = records.map(r => r.threading);
+      const labor = records.map(r => r.labor);
+
+      const ctx = document.getElementById('trendChart').getContext('2d');
+      if (window._chartInstance) window._chartInstance.destroy();
+      window._chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Wedges', data: wedges, borderColor: '#1f77b4', backgroundColor: 'rgba(31,119,180,0.1)', tension: 0.2 },
+            { label: 'Threading', data: threading, borderColor: '#ff7f0e', backgroundColor: 'rgba(255,127,14,0.1)', tension: 0.2 },
+            { label: 'Labor', data: labor, borderColor: '#2ca02c', backgroundColor: 'rgba(44,160,44,0.1)', tension: 0.2 }
+          ]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    // Provided function adjusted: returns parsed records with numeric conversion
+    async function loadGitHubData(token) {
+        const url = "https://api.github.com/repos/karmpur496-vijay/My-girder/contents/data/girder_reports.csv";
+        const headers = {};
+        if (token) headers['Authorization'] = `token ${token}`;
+
+        const response = await fetch(url, { headers });
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${text}`);
+        }
+
+        const fileData = await response.json();
+        // fileData.content is base64 encoded
+        const csvContent = atob(fileData.content.replace(/\n/g, ''));
+        const lines = csvContent.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length <= 1) return [];
+
+        const rows = lines.slice(1); // skip header
+        const reports = rows.map(row => {
+            const cols = row.split(',').map(c => c.trim());
+            return {
+                date: cols[0] || '',
+                girder: cols[1] || '',
+                wedges: Number(cols[2] || 0),
+                threading: Number(cols[3] || 0),
+                stressing: Number(cols[4] || 0),
+                grouting: Number(cols[5] || 0),
+                labor: Number(cols[6] || 0)
+            };
+        }).filter(r => r.date !== '');
+
+        return reports;
+    }
+
+    document.getElementById('loadBtn').addEventListener('click', async () => {
+      const token = document.getElementById('token').value.trim();
+      try {
+        const records = await loadGitHubData(token);
+        renderTable(records);
+      } catch (err) {
+        alert('Error loading data: ' + err.message);
       }
     });
-  </script>
+
+    // Fallback: load raw file from raw.githubusercontent (public)
+    document.getElementById('loadRawBtn').addEventListener('click', async () => {
+      try {
+        const rawUrl = 'https://raw.githubusercontent.com/karmpur496-vijay/My-girder/main/data/girder_reports.csv';
+        const res = await fetch(rawUrl);
+        if (!res.ok) throw new Error(res.status + ' ' + res.statusText);
+        const csv = await res.text();
+        const lines = csv.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        const rows = lines.slice(1);
+        const records = rows.filter(r => r.trim() !== '').map(row => {
+          const cols = row.split(',').map(c => c.trim());
+          return {
+            date: cols[0] || '',
+            girder: cols[1] || '',
+            wedges: Number(cols[2] || 0),
+            threading: Number(cols[3] || 0),
+            stressing: Number(cols[4] || 0),
+            grouting: Number(cols[5] || 0),
+            labor: Number(cols[6] || 0)
+          };
+        }).filter(r => r.date !== '');
+
+        renderTable(records);
+      } catch (err) {
+        alert('Failed to load raw file: ' + err.message);
+      }
+    });
+  <\/script>
 </body>
 </html>
