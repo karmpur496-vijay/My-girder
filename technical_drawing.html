@@ -3,45 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RK Pro | Engineering Layout Master</title>
+    <title>RK Precision | A4 Layout Clean Labels</title>
     <style>
-        :root { --sidebar-w: 360px; --primary: #2563eb; --sec1: #059669; --sec2: #d97706; }
+        :root { --sidebar-w: 360px; --primary: #2563eb; }
         * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        body { margin: 0; background: #f1f5f9; font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; }
+        body { margin: 0; background: #f1f5f9; font-family: 'Segoe UI', Arial, sans-serif; }
 
         .app-container { display: flex; }
-        .sidebar { width: var(--sidebar-w); background: white; border-right: 1px solid #e2e8f0; padding: 15px; position: fixed; height: 100vh; overflow-y: auto; z-index: 1000; }
-        .workspace { flex-grow: 1; margin-left: var(--sidebar-w); padding: 30px 10px; display: flex; justify-content: center; background: #cbd5e1; }
+        .sidebar { width: var(--sidebar-w); background: white; border-right: 1px solid #e2e8f0; padding: 15px; position: fixed; height: 100vh; overflow-y: auto; z-index: 1000; font-size: 13px; }
+        .workspace { flex-grow: 1; margin-left: var(--sidebar-w); padding: 20px; display: flex; justify-content: center; background: #cbd5e1; }
         
-        /* Letter Size (8.5 x 11 inches) */
-        .letter-page { width: 215.9mm; height: 279.4mm; background: #fff; padding: 15mm; box-shadow: 0 5px 25px rgba(0,0,0,0.2); position: relative; display: flex; flex-direction: column; }
+        .a4-page { width: 210mm; height: 297mm; background: #fff; padding: 15mm; box-shadow: 0 5px 25px rgba(0,0,0,0.2); position: relative; display: flex; flex-direction: column; }
 
-        .plate-box { width: 100%; height: 450px; margin-top: 60px; display: flex; align-items: center; justify-content: center; position: relative; }
-        .plate { background: #fff; border: 3px solid #000; position: relative; z-index: 10; box-shadow: 2px 2px 0px #000; }
-
-        /* Outer Plate Dimensions */
-        .plate-dim-x { position: absolute; top: -45px; left: 0; width: 100%; border-left: 2.5px solid #000; border-right: 2.5px solid #000; height: 15px; border-bottom: 2.5px solid #000; text-align: center; font-weight: 900; font-size: 16px; color: #000; line-height: 12px; }
-        .plate-dim-y { position: absolute; left: -55px; top: 0; height: 100%; border-top: 2.5px solid #000; border-bottom: 2.5px solid #000; width: 15px; border-right: 2.5px solid #000; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; writing-mode: vertical-rl; transform: rotate(180deg); color: #000; }
-
-        /* Technical Center Crosshair (+) */
-        .hole { position: absolute; border: 2px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff; transform: translate(-50%, -50%); z-index: 20; }
-        .hole::before { content: ''; position: absolute; width: 16px; height: 1px; background: #000; }
-        .hole::after { content: ''; position: absolute; width: 1px; height: 16px; background: #000; }
+        .header { border-bottom: 3px solid #000; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
         
-        .dot-line { position: absolute; border: 1px dashed #334155; pointer-events: none; z-index: 5; }
-        .dim-lbl { position: absolute; background: #000; color: #fff; font-size: 10px; padding: 2px 5px; border-radius: 3px; transform: translate(-50%, -50%); z-index: 25; font-weight: bold; border: 1px solid #fff; }
+        .plate-box { width: 100%; height: 480px; margin-top: 60px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .plate { background: #fff; border: 3px solid #000; position: relative; z-index: 10; }
 
-        .card { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 12px; }
-        .card h4 { margin: 0 0 10px 0; font-size: 13px; color: #1e293b; display: flex; justify-content: space-between; }
+        .plate-dim-x { position: absolute; top: -50px; left: 0; width: 100%; border-left: 2px solid #000; border-right: 2px solid #000; height: 15px; border-bottom: 2px solid #000; text-align: center; font-weight: 900; font-size: 18px; color: #000; }
+        .plate-dim-y { position: absolute; left: -60px; top: 0; height: 100%; border-top: 2px solid #000; border-bottom: 2px solid #000; width: 15px; border-right: 2px solid #000; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; writing-mode: vertical-rl; transform: rotate(180deg); color: #000; }
+
+        .hole { position: absolute; border: 2.5px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff; transform: translate(-50%, -50%); z-index: 20; }
+        .hole::before { content: ''; position: absolute; width: 20px; height: 1.5px; background: #000; }
+        .hole::after { content: ''; position: absolute; width: 1.5px; height: 20px; background: #000; }
+        
+        .dot-line { position: absolute; border: 1.2px dashed #334155; pointer-events: none; z-index: 5; }
+        
+        /* Updated Label: Shifted 8px away from the dotted line */
+        .dim-lbl { position: absolute; background: #fff; color: #000; font-size: 10px; padding: 1px 3px; z-index: 25; font-weight: 800; white-space: nowrap; transform: translate(-50%, -50%); }
+        .lbl-h { margin-top: -10px; } /* Shifts label above horizontal lines */
+        .lbl-v { margin-left: -18px; } /* Shifts label to the left of vertical lines */
+
+        .card { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 10px; }
         .row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
         input[type="number"] { width: 70px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; }
         input[type="range"] { flex: 1; }
 
-        @page { size: letter; margin: 0; }
+        .summary-section { margin-top: auto; border: 2px solid #000; }
+        .summary-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .summary-table td, .summary-table th { padding: 8px; border: 1px solid #000; }
+
+        .footer { display: flex; justify-content: space-between; font-size: 11px; padding-top: 15px; font-weight: bold; border-top: 2px solid #000; margin-top: 15px;}
+
+        @page { size: A4; margin: 0; }
         @media print { 
             .sidebar { display: none !important; } 
             .workspace { margin: 0; padding: 0; background: #fff; } 
-            .letter-page { box-shadow: none; margin: 0; width: 100%; height: 100vh; } 
+            .a4-page { box-shadow: none; margin: 0; height: 100vh; } 
         }
     </style>
 </head>
@@ -49,50 +57,42 @@
 
 <div class="app-container">
     <aside class="sidebar">
-        <h2 style="color:var(--primary); margin-bottom:15px; font-size: 20px;">RK Layout Master</h2>
-        
+        <h2 style="color:var(--primary); margin-top:0;">RK Layout Config</h2>
         <div class="card">
-            <h4>Plate Outer Size (mm)</h4>
+            <h4>Plate Size</h4>
             <div class="row">W: <input type="range" id="sw-r" min="150" max="400" value="340"><input type="number" id="sw-n" value="340"></div>
             <div class="row">H: <input type="range" id="sh-r" min="150" max="400" value="240"><input type="number" id="sh-n" value="240"></div>
         </div>
-
-        <div class="card" style="border-left: 5px solid var(--primary);">
-            <h4>Main Hole <label style="font-size:10px;"><input type="checkbox" id="dbl-c"> DOUBLE (+)</label></h4>
+        <div class="card">
+            <h4>Main Hole <input type="checkbox" id="dbl-c"> Double</h4>
             <div class="row">Ø: <input type="number" id="cd-n" value="80"></div>
             <div class="row">X: <input type="range" id="cx-r" min="0" max="400" value="170"><input type="number" id="cx-n" value="170"></div>
             <div class="row">Y: <input type="range" id="cy-r" min="0" max="400" value="120"><input type="number" id="cy-n" value="120"></div>
         </div>
-
-        <div class="card" style="border-left: 5px solid var(--sec1);">
+        <div class="card">
             <h4>Small Hole 1 <input type="checkbox" id="en-s1" checked></h4>
             <div class="row">Ø: <input type="number" id="sd1-n" value="30"></div>
             <div class="row">X: <input type="range" id="sx1-r" min="0" max="400" value="60"><input type="number" id="sx1-n" value="60"></div>
             <div class="row">Y: <input type="range" id="sy1-r" min="0" max="400" value="60"><input type="number" id="sy1-n" value="60"></div>
         </div>
-
-        <div class="card" style="border-left: 5px solid var(--sec2);">
+        <div class="card">
             <h4>Small Hole 2 <input type="checkbox" id="en-s2"></h4>
             <div class="row">Ø: <input type="number" id="sd2-n" value="30"></div>
             <div class="row">X: <input type="range" id="sx2-r" min="0" max="400" value="280"><input type="number" id="sx2-n" value="280"></div>
             <div class="row">Y: <input type="range" id="sy2-r" min="0" max="400" value="60"><input type="number" id="sy2-n" value="60"></div>
         </div>
-
-        <div class="card" style="background:#f1f5f9">
-            <div class="row">Plate Thk: <input type="number" id="thk" value="12"></div>
-            <div class="row">Rate / kg: <input type="number" id="rate" value="82"></div>
+        <div class="card">
+            <div class="row">Thk: <input type="number" id="thk" value="12"> Rate: <input type="number" id="rate" value="82"></div>
         </div>
-
-        <button style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.print()">PRINT LETTER DRAWING</button>
+        <button style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="window.print()">PRINT BLUEPRINT (A4)</button>
     </aside>
 
     <main class="workspace">
-        <div class="letter-page">
-            <div style="border-bottom: 3px solid #000; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-end;">
-                <div><h1 style="margin:0; font-size: 22px; letter-spacing: 1px;">ENGINEERING JOB CARD</h1><p style="margin:0; font-size: 11px; font-weight:bold; color: #444;">Designer: Ranvijay Kumar | Layout: Auto-Generated</p></div>
-                <div id="job-id" style="font-weight:900; border:2.5px solid #000; padding:5px 12px; font-size:16px; background: #eee;"></div>
+        <div class="a4-page">
+            <div class="header">
+                <div><h1 style="margin:0; font-size: 24px;">ENGINEERING JOB CARD</h1><p style="margin:0;">By: Ranvijay Kumar</p></div>
+                <div id="job-id" style="font-weight:900; border:2.5px solid #000; padding:5px 15px; font-size:16px;"></div>
             </div>
-
             <div class="plate-box">
                 <div class="plate" id="p-surf">
                     <div id="plate-w-lbl" class="plate-dim-x"></div>
@@ -101,21 +101,17 @@
                     <div id="layer-holes"></div>
                 </div>
             </div>
-
-            <div style="background: #f8fafc; border: 2px solid #000; padding: 10px; margin-top: auto;">
-                <h3 style="margin: 0 0 5px 0; font-size: 12px; text-decoration: underline;">AUTOMATIC DESIGN DESCRIPTION:</h3>
-                <p id="auto-desc" style="margin: 0; font-size: 11px; line-height: 1.4; color: #000;"></p>
+            <div class="summary-section">
+                <table class="summary-table">
+                    <tr style="background:#000; color:#fff;"><th>Technical Specifications</th><th>Calculated Values</th></tr>
+                    <tr><td style="width:30%">Full Design Description</td><td id="auto-desc" style="line-height:1.4"></td></tr>
+                    <tr><td>Plate Size (W x H x T)</td><td id="rep-size" style="font-weight:bold;"></td></tr>
+                    <tr style="background:#f1f5f9;"><td><b>Net Weight & Est. Cost</b></td><td id="rep-total" style="font-weight:bold; font-size:14px;"></td></tr>
+                </table>
             </div>
-
-            <table style="width:100%; border-collapse: collapse; font-size: 11px; border: 2.5px solid #000; margin-top: 15px;">
-                <tr style="background:#000; color:#fff;"><th style="padding:10px; border:1px solid #000; text-align:left;">Final Summary</th><th style="padding:10px; border:1px solid #000; text-align:left;">Technical Data</th></tr>
-                <tr><td style="padding:8px; border:1px solid #000; font-weight:bold;">Plate Profile</td><td id="rep-size" style="padding:8px; border:1px solid #000;"></td></tr>
-                <tr style="background: #ffffcc; font-size: 14px; color: #000;"><td style="padding:10px; border:1px solid #000; font-weight:bold;">Total Weight & Estimate</td><td id="rep-total" style="padding:10px; border:1px solid #000; font-weight:bold;"></td></tr>
-            </table>
-
-            <div style="margin-top: 20px; display: flex; justify-content: space-between; font-size: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
-                <div>* All dimensions are in <b>mm</b>. <br>* (+) denotes Hole Center for punching.</div>
-                <div style="text-align: right;"><b>CHECKED BY:</b> ____________________</div>
+            <div class="footer">
+                <div>* All dimensions are in <b>mm</b>.<br>* (+) denotes Hole Center for punching.</div>
+                <div style="text-align: right;"><br>CHECKED BY: ____________________</div>
             </div>
         </div>
     </main>
@@ -129,20 +125,21 @@
     });
 
     function drawEdgeToCenter(x, y, pW, pH, layer) {
-        const createLine = (x1, y1, w, h, val, lx, ly) => {
-            if(val <= 0) return;
+        const createLine = (x1, y1, w, h, val, lx, ly, isVertical) => {
+            if(val <= 1) return;
             const l = document.createElement('div'); l.className = 'dot-line';
             l.style.left = x1+'px'; l.style.top = y1+'px'; l.style.width = w+'px'; l.style.height = h+'px';
             if(w > 0) l.style.borderTop = '1.5px dashed #334155'; else l.style.borderLeft = '1.5px dashed #334155';
             layer.appendChild(l);
-            const lbl = document.createElement('div'); lbl.className = 'dim-lbl';
+            const lbl = document.createElement('div'); 
+            lbl.className = 'dim-lbl ' + (isVertical ? 'lbl-v' : 'lbl-h');
             lbl.style.left = lx+'px'; lbl.style.top = ly+'px'; lbl.innerText = Math.round(val);
             layer.appendChild(lbl);
         };
-        createLine(0, y, x, 0, x, x/2, y); 
-        createLine(x, 0, 0, y, y, x, y/2);
-        createLine(x, y, (pW-x), 0, (pW-x), x + (pW-x)/2, y);
-        createLine(x, y, 0, (pH-y), (pH-y), x, y + (pH-y)/2);
+        createLine(0, y, x, 0, x, x/2, y, false); 
+        createLine(x, 0, 0, y, y, x, y/2, true);
+        createLine(x, y, (pW-x), 0, (pW-x), x + (pW-x)/2, y, false);
+        createLine(x, y, 0, (pH-y), (pH-y), x, y + (pH-y)/2, true);
     }
 
     function refresh() {
@@ -150,46 +147,36 @@
         const CX = parseFloat(document.getElementById('cx-n').value), CY = parseFloat(document.getElementById('cy-n').value), CD = parseFloat(document.getElementById('cd-n').value);
         const s1A = document.getElementById('en-s1').checked, s2A = document.getElementById('en-s2').checked, isD = document.getElementById('dbl-c').checked;
         const Thk = parseFloat(document.getElementById('thk').value);
-
         document.getElementById('plate-w-lbl').innerText = SW + " mm";
         document.getElementById('plate-h-lbl').innerText = SH + " mm";
-
         const plate = document.getElementById('p-surf');
         plate.style.width = SW+'px'; plate.style.height = SH+'px';
         const lLayer = document.getElementById('layer-lines'), hLayer = document.getElementById('layer-holes');
         lLayer.innerHTML = hLayer.innerHTML = '';
-
         let holes = [];
-        let mPts = isD ? [{x:CX, y:CY, n:'Main L'}, {x:SW-CX, y:CY, n:'Main R'}] : [{x:CX, y:CY, n:'Main'}];
-        mPts.forEach(p => holes.push({...p, d:CD, type:'Main'}));
-        
-        if(s1A) holes.push({x: parseFloat(document.getElementById('sx1-n').value), y: parseFloat(document.getElementById('sy1-n').value), d: parseFloat(document.getElementById('sd1-n').value), type:'Small 1'});
-        if(s2A) holes.push({x: parseFloat(document.getElementById('sx2-n').value), y: parseFloat(document.getElementById('sy2-n').value), d: parseFloat(document.getElementById('sd2-n').value), type:'Small 2'});
-
+        let mPts = isD ? [{x:CX, y:CY}, {x:SW-CX, y:CY}] : [{x:CX, y:CY}];
+        mPts.forEach(p => holes.push({...p, d:CD}));
+        if(s1A) holes.push({x: parseFloat(document.getElementById('sx1-n').value), y: parseFloat(document.getElementById('sy1-n').value), d: parseFloat(document.getElementById('sd1-n').value)});
+        if(s2A) holes.push({x: parseFloat(document.getElementById('sx2-n').value), y: parseFloat(document.getElementById('sy2-n').value), d: parseFloat(document.getElementById('sd2-n').value)});
         let tArea = 0;
-        let descParts = [`Rectangular MS Plate of size ${SW}mm x ${SH}mm with ${Thk}mm thickness.`];
-        
         holes.forEach(h => {
             drawEdgeToCenter(h.x, h.y, SW, SH, lLayer);
             const div = document.createElement('div'); div.className = 'hole';
             div.style.width = div.style.height = h.d + 'px'; div.style.left = h.x + 'px'; div.style.top = h.y + 'px';
-            div.innerHTML = `<span style="position:absolute; bottom:-16px; font-weight:900; font-size:10px; color:#000;">Ø${h.d}</span>`;
+            div.innerHTML = `<span style="position:absolute; bottom:-18px; font-weight:900; font-size:10px;">Ø${h.d}</span>`;
             hLayer.appendChild(div);
             tArea += Math.PI * (h.d/2)**2;
         });
-
-        descParts.push(`Contains total ${holes.length} holes: ${isD?'Two':'One'} Main Hole(s) of Ø${CD}mm.`);
-        if(s1A || s2A) descParts.push(`Additional small holes: ${s1A?`Ø${document.getElementById('sd1-n').value}mm`:''} ${s2A?`& Ø${document.getElementById('sd2-n').value}mm`:''}.`);
-        descParts.push(`All measurements marked from edges to center cross (+).`);
-
+        let desc = `MS Plate ${SW}x${SH}x${Thk}mm. Total ${holes.length} holes. Main: Ø${CD}mm.`;
+        if(s1A) desc += ` Small Hole 1: Ø${document.getElementById('sd1-n').value}mm.`;
+        if(s2A) desc += ` Small Hole 2: Ø${document.getElementById('sd2-n').value}mm.`;
+        desc += ` (+) marks center for drilling. All measurements from edges.`;
         const w = ((SW*SH) - tArea) * Thk * 0.00000785;
         const pr = w * parseFloat(document.getElementById('rate').value) * 1.18;
-        
-        document.getElementById('auto-desc').innerText = descParts.join(' ');
+        document.getElementById('auto-desc').innerText = desc;
         document.getElementById('rep-size').innerText = `${SW} x ${SH} x ${Thk} mm`;
-        document.getElementById('rep-total').innerText = `${w.toFixed(3)} kg | ₹ ${Math.round(pr)} (Inc. GST)`;
-        
-        if(!document.getElementById('job-id').innerText) document.getElementById('job-id').innerText = "JOB-" + Math.random().toString(36).substr(2,5).toUpperCase();
+        document.getElementById('rep-total').innerText = `${w.toFixed(3)} kg | ₹ ${Math.round(pr)} (Approx)`;
+        if(!document.getElementById('job-id').innerText) document.getElementById('job-id').innerText = "RK-" + Math.random().toString(36).substr(2,4).toUpperCase();
     }
     refresh();
 </script>
