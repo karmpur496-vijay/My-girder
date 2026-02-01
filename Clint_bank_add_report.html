@@ -9,42 +9,51 @@
         * { box-sizing: border-box; font-family: sans-serif; }
         body { background: var(--bg); margin: 0; padding: 5px; }
         
-        .card { background: white; border-radius: 10px; padding: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 15px; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; }
+        .card { background: white; border-radius: 10px; padding: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 15px; width: 100%; max-width: 950px; margin-left: auto; margin-right: auto; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
         label { font-size: 10px; font-weight: bold; color: var(--primary); display: block; margin-bottom: 3px; }
         input, textarea, select { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 5px; font-size: 13px; }
         
+        .check-group-row { display: flex; gap: 15px; margin-bottom: 10px; background: #eff6ff; padding: 10px; border-radius: 5px; flex-wrap: wrap; }
+        .check-item { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: bold; color: var(--primary); }
+        .check-item input { width: auto; cursor: pointer; }
+        
+        #bank-inputs { display: none; }
+
         .btn-group { display: flex; gap: 8px; margin-top: 15px; }
         .btn { flex: 1; padding: 10px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; font-size: 12px; }
         .btn-add { background: var(--primary); }
         .btn-print { background: #10b981; }
+        .btn-del { background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 10px; }
         
         .invoice-box { background: white; padding: 20px; border-top: 5px solid var(--primary); }
         
-        /* Bill From & To Layout */
         .billing-section { display: flex; justify-content: space-between; gap: 20px; margin: 20px 0; border-bottom: 1px solid #eee; padding-bottom: 15px; flex-wrap: wrap; }
         .bill-col { flex: 1; min-width: 200px; }
         .bill-col h4 { margin: 0 0 5px 0; color: var(--primary); font-size: 12px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 3px; }
-        .bill-col p { margin: 2px 0; font-size: 12px; line-height: 1.4; color: #333; }
+        .bill-col p { margin: 2px 0; font-size: 12px; line-height: 1.4; color: #333; white-space: pre-line; }
 
         .table-responsive { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 11px; min-width: 700px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 11px; min-width: 800px; }
         th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
         th { background: #f8fafc; color: var(--primary); }
 
         .bottom-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
         .bank-info { border-left: 3px solid var(--primary); padding-left: 10px; font-size: 11px; flex: 1; min-width: 200px; }
-        .summary { flex: 1; min-width: 250px; }
+        .summary { flex: 1; min-width: 280px; }
         .sum-line { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+        .tax-row { display: none; } /* Hidden by default in preview if not selected */
+        .show-tax { display: flex !important; }
+        
         .net-pay-highlight { background: #1e3a8a; color: white; padding: 12px; border-radius: 8px; text-align: center; margin-top: 10px; }
         .net-amount { font-size: 22px; font-weight: 900; display: block; }
         .hide-bank { display: none !important; }
 
         @media print { 
-            .no-print { display: none !important; } 
+            .no-print, .action-col { display: none !important; } 
             body { background: white; padding: 0; }
-            .card { box-shadow: none; max-width: 100%; border: none; }
-            .net-pay-highlight { border: 1px solid #000; color: #000 !important; background: var(--highlight) !important; }
+            .card { box-shadow: none; max-width: 100%; border: none; margin: 0; }
+            .net-pay-highlight { border: 1px solid #000; color: #000 !important; background: var(--highlight) !important; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -61,30 +70,47 @@
             <textarea id="f-to" rows="2" placeholder="Enter Client Name & Address" oninput="updateBilling()"></textarea>
         </div>
     </div>
+    
     <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
-    <div class="form-grid">
-        <div class="field"><label>Bank Name</label><input type="text" id="f-bname" placeholder="Optional" oninput="updateBank()"></div>
-        <div class="field"><label>A/c No</label><input type="text" id="f-bacc" value="" oninput="updateBank()"></div>
-        <div class="field"><label>IFSC Code</label><input type="text" id="f-bifsc" value="" oninput="updateBank()"></div>
+    
+    <div class="check-group-row">
+        <div class="check-item">
+            <input type="checkbox" id="f-use-bank" onchange="toggleBankForm()"> <label for="f-use-bank" style="margin:0;">Bank Details</label>
+        </div>
+        <div class="check-item">
+            <input type="checkbox" id="f-use-gst" onchange="render()"> <label for="f-use-gst" style="margin:0;">Add GST (18%)</label>
+        </div>
+        <div class="check-item">
+            <input type="checkbox" id="f-use-tds" onchange="render()"> <label for="f-use-tds" style="margin:0;">Deduct TDS (1%)</label>
+        </div>
+    </div>
+
+    <div id="bank-inputs" class="form-grid">
+        <div class="field"><label>Bank Name</label><input type="text" id="f-bname" oninput="updateBank()"></div>
+        <div class="field"><label>A/c No</label><input type="text" id="f-bacc" oninput="updateBank()"></div>
+        <div class="field"><label>IFSC Code</label><input type="text" id="f-bifsc" oninput="updateBank()"></div>
+    </div>
+
+    <div class="form-grid" style="margin-top:10px;">
         <div class="field"><label>Bill Date</label><input type="date" id="f-date" oninput="updateHeader()"></div>
         <div class="field"><label>Inv #</label><input type="text" id="f-inv" value="001" oninput="updateHeader()"></div>
     </div>
     
     <div class="form-grid" style="margin-top:10px; border-top: 1px solid #eee; padding-top:10px;">
-        <div class="field"><label>Location</label><input type="text" id="f-loc"></div>
-        <div class="field"><label>Girder Lenth(Mtrs.)</label><input type="number" id="f-mtr"></div>
+        <div class="field"><label>Location</label><input type="text" id="f-loc" placeholder="A1-A2"></div>
+        <div class="field"><label>Length (Mtrs)</label><input type="number" id="f-mtr"></div>
         <div class="field">
             <label>Strands Type</label>
             <select id="f-stype"><option value="0.78">12.9 mm</option><option value="1.10">15.2 mm</option></select>
         </div>
-        <div class="field"><label>Ht. Strands(Nos)</label><input type="number" id="f-lrpc"></div>
+        <div class="field"><label>No. of Strands</label><input type="number" id="f-lrpc"></div>
         <div class="field"><label>Rate/Ton</label><input type="number" id="f-rtn"></div>
-        <div class="field"><label>Girder Qty.(Nos)</label><input type="number" id="f-nos" value="1"></div>
+        <div class="field"><label>Qty (Nos)</label><input type="number" id="f-nos" value="1"></div>
     </div>
 
     <div class="btn-group">
         <button class="btn btn-add" onclick="addItem()">+ Add Item</button>
-        <button class="btn btn-print" onclick="window.print()">Print Bill</button>
+        <button class="btn btn-print" onclick="window.print()">Print / Save PDF</button>
     </div>
 </div>
 
@@ -100,11 +126,11 @@
     <div class="billing-section">
         <div class="bill-col">
             <h4>Bill From</h4>
-            <p id="d-from" style="white-space: pre-line; font-weight: bold;">Ranvijay Kumar\nMob: 7800817675</p>
+            <p id="d-from" style="font-weight: bold;"></p>
         </div>
         <div class="bill-col">
             <h4>Bill To</h4>
-            <p id="d-to" style="white-space: pre-line;">Client Details...</p>
+            <p id="d-to">Client Details...</p>
         </div>
     </div>
 
@@ -112,7 +138,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>SN</th><th>Location</th><th>Mtrs</th><th>Strands Type</th><th>HT.Strands(Nos)</th><th>Wt./Unit</th><th>Rate</th><th>Girder Qty.(Nos)</th><th>Ton</th><th>Total</th>
+                    <th>SN</th><th>Location</th><th>Mtrs</th><th>Type</th><th>Strands</th><th>Wt/Unit</th><th>Rate</th><th>Qty</th><th>Ton</th><th>Total</th><th class="action-col">Action</th>
                 </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -129,8 +155,9 @@
         
         <div class="summary">
             <div class="sum-line"><span>Gross Amount:</span><span id="h30">0.00</span></div>
-            <div class="sum-line"><span>Advance Paid:</span><input type="number" id="h32" value="0" oninput="calcTotal()" style="width:70px; text-align:right; padding:2px;"></div>
-            <div class="sum-line" style="color:#b45309; font-size:11px;"><span>TDS (1%):</span><span id="h31">0.00</span></div>
+            <div class="sum-line tax-row" id="row-gst"><span>GST (18%):</span><span id="h-gst">0.00</span></div>
+            <div class="sum-line"><span>Advance Paid:</span><input type="number" id="h32" value="0" oninput="render()" style="width:80px; text-align:right;"></div>
+            <div class="sum-line tax-row" id="row-tds" style="color:#b45309;"><span>TDS (1%):</span><span id="h31">0.00</span></div>
             <div class="net-pay-highlight">
                 <span style="font-size:11px; text-transform:uppercase;">Net Payable</span>
                 <span class="net-amount" id="h33">₹ 0.00</span>
@@ -141,13 +168,19 @@
 
 <script>
     let rows = [];
+    
     window.onload = () => { 
         document.getElementById('f-date').value = new Date().toISOString().split('T')[0]; 
         updateHeader(); 
         updateBilling();
-        updateBank(); 
     }
     
+    function toggleBankForm() {
+        const isChecked = document.getElementById('f-use-bank').checked;
+        document.getElementById('bank-inputs').style.display = isChecked ? 'grid' : 'none';
+        updateBank();
+    }
+
     function updateHeader() {
         document.getElementById('d-date').innerText = document.getElementById('f-date').value;
         document.getElementById('d-inv').innerText = document.getElementById('f-inv').value;
@@ -159,13 +192,12 @@
     }
 
     function updateBank() {
-        const bName = document.getElementById('f-bname').value;
+        const isChecked = document.getElementById('f-use-bank').checked;
         const bWrap = document.getElementById('d-bank-wrap');
-        if(bName.trim() === "") {
-            bWrap.classList.add('hide-bank');
-        } else {
+        if(!isChecked) { bWrap.classList.add('hide-bank'); } 
+        else {
             bWrap.classList.remove('hide-bank');
-            document.getElementById('d-bname').innerText = bName;
+            document.getElementById('d-bname').innerText = document.getElementById('f-bname').value;
             document.getElementById('d-bacc').innerText = document.getElementById('f-bacc').value;
             document.getElementById('d-bifsc').innerText = document.getElementById('f-bifsc').value;
         }
@@ -178,7 +210,7 @@
         const lrpc = parseFloat(document.getElementById('f-lrpc').value)||0; 
         const rtn = parseFloat(document.getElementById('f-rtn').value)||0;
         const nos = parseFloat(document.getElementById('f-nos').value)||1;
-        if(!loc || mtr <= 0) return alert("Enter valid data!");
+        if(!loc || mtr <= 0) return alert("Valid data required!");
         
         const wtu = (mtr * lrpc * factor) / 1000;
         const tton = wtu * nos;
@@ -188,21 +220,16 @@
         document.getElementById('f-loc').value = ""; document.getElementById('f-mtr').value = "";
     }
 
+    function deleteItem(index) { rows.splice(index, 1); render(); }
+
     function render() {
-        const tbody = document.getElementById('tbody'); tbody.innerHTML = ""; let gross = 0;
+        const tbody = document.getElementById('tbody'); 
+        tbody.innerHTML = ""; let gross = 0;
         rows.forEach((r, i) => {
             gross += r.total;
             tbody.innerHTML += `<tr>
-                <td>${i+1}</td>
-                <td style="text-align:left;">${r.loc}</td>
-                <td>${r.mtr}</td>
-                <td>${r.strandLabel}</td>
-                <td>${r.lrpc}</td>
-                <td>${r.wtu.toFixed(3)}</td>
-                <td>${r.rtn.toLocaleString()}</td>
-                <td>${r.nos}</td>
-                <td>${r.tton.toFixed(3)}</td>
-                <td style="font-weight:bold;">${r.total.toFixed(2)}</td>
+                <td>${i+1}</td><td style="text-align:left;">${r.loc}</td><td>${r.mtr}</td><td>${r.strandLabel}</td><td>${r.lrpc}</td><td>${r.wtu.toFixed(3)}</td><td>${r.rtn.toLocaleString()}</td><td>${r.nos}</td><td>${r.tton.toFixed(3)}</td><td style="font-weight:bold;">${r.total.toFixed(2)}</td>
+                <td class="action-col"><button class="btn-del" onclick="deleteItem(${i})">Delete</button></td>
             </tr>`;
         });
         calcTotal(gross);
@@ -211,11 +238,24 @@
     function calcTotal(g) {
         let gross = g !== undefined ? g : rows.reduce((a, b) => a + b.total, 0);
         const adv = parseFloat(document.getElementById('h32').value) || 0;
-        const taxable = (gross - adv) > 0 ? (gross - adv) : 0;
-        const tds = taxable * 0.01;
-        document.getElementById('h30').innerText = gross.toLocaleString('en-IN');
-        document.getElementById('h31').innerText = tds.toFixed(2);
-        document.getElementById('h33').innerText = "₹ " + (gross - tds - adv).toLocaleString('en-IN');
+        
+        // Tax Logic
+        const useGST = document.getElementById('f-use-gst').checked;
+        const useTDS = document.getElementById('f-use-tds').checked;
+        
+        let gstAmt = useGST ? (gross * 0.18) : 0;
+        let tdsAmt = useTDS ? (gross * 0.01) : 0;
+        
+        // Update UI Display
+        document.getElementById('row-gst').className = useGST ? 'sum-line show-tax' : 'sum-line tax-row';
+        document.getElementById('row-tds').className = useTDS ? 'sum-line show-tax' : 'sum-line tax-row';
+        
+        document.getElementById('h30').innerText = gross.toLocaleString('en-IN', {minimumFractionDigits: 2});
+        document.getElementById('h-gst').innerText = gstAmt.toLocaleString('en-IN', {minimumFractionDigits: 2});
+        document.getElementById('h31').innerText = tdsAmt.toLocaleString('en-IN', {minimumFractionDigits: 2});
+        
+        const net = (gross + gstAmt) - tdsAmt - adv;
+        document.getElementById('h33').innerText = "₹ " + net.toLocaleString('en-IN', {minimumFractionDigits: 2});
     }
 </script>
 </body>
