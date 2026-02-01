@@ -3,234 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranvijay Kumar | Complete Precision Drawing</title>
+    <title>RK Pro | Engineering Layout Master</title>
     <style>
-        :root { --sidebar-w: 320px; }
+        :root { --sidebar-w: 360px; --primary: #2563eb; --sec1: #059669; --sec2: #d97706; }
         * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        body, html { margin: 0; padding: 0; background: #f1f5f9; font-family: 'Inter', sans-serif; }
+        body { margin: 0; background: #f1f5f9; font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; }
 
-        .app-container { display: flex; min-height: 100vh; }
-        .sidebar { 
-            width: var(--sidebar-w); background: white; border-right: 1px solid #e2e8f0; 
-            padding: 20px; position: fixed; height: 100vh; overflow-y: auto; z-index: 1000;
-        }
-
-        .workspace { flex-grow: 1; margin-left: var(--sidebar-w); padding: 20px; display: flex; justify-content: center; background: #cbd5e1; }
+        .app-container { display: flex; }
+        .sidebar { width: var(--sidebar-w); background: white; border-right: 1px solid #e2e8f0; padding: 15px; position: fixed; height: 100vh; overflow-y: auto; z-index: 1000; }
+        .workspace { flex-grow: 1; margin-left: var(--sidebar-w); padding: 30px 10px; display: flex; justify-content: center; background: #cbd5e1; }
         
-        .a4-page {
-            width: 210mm; height: 296mm; background: white; padding: 10mm;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; position: relative;
-        }
+        /* Letter Size (8.5 x 11 inches) */
+        .letter-page { width: 215.9mm; height: 279.4mm; background: #fff; padding: 15mm; box-shadow: 0 5px 25px rgba(0,0,0,0.2); position: relative; display: flex; flex-direction: column; }
 
-        .plate { 
-            width: 560px; height: 560px; background: #fff; border: 2.5px solid #000; 
-            position: relative; margin: 20px auto; cursor: crosshair; overflow: hidden;
-        }
+        .plate-box { width: 100%; height: 450px; margin-top: 60px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .plate { background: #fff; border: 3px solid #000; position: relative; z-index: 10; box-shadow: 2px 2px 0px #000; }
 
-        /* Essential Shapes */
-        .center-hole { 
-            position: absolute; left: 50%; top: 50%;
-            border: 2px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.02); font-weight: bold; transform: translate(-50%, -50%); z-index: 5;
-            text-align: center; font-size: 11px;
-        }
+        /* Outer Plate Dimensions */
+        .plate-dim-x { position: absolute; top: -45px; left: 0; width: 100%; border-left: 2.5px solid #000; border-right: 2.5px solid #000; height: 15px; border-bottom: 2.5px solid #000; text-align: center; font-weight: 900; font-size: 16px; color: #000; line-height: 12px; }
+        .plate-dim-y { position: absolute; left: -55px; top: 0; height: 100%; border-top: 2.5px solid #000; border-bottom: 2.5px solid #000; width: 15px; border-right: 2.5px solid #000; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; writing-mode: vertical-rl; transform: rotate(180deg); color: #000; }
 
-        #dynamic-hole { 
-            position: absolute; border: 2px solid #000; background: transparent;
-            border-radius: 50%; transform: translate(-50%, -50%); display: flex; 
-            align-items: center; justify-content: center; font-weight: bold; 
-            color: #000; font-size: 10px; z-index: 30;
-        }
-
-        /* Lines & Labels */
-        .line { position: absolute; pointer-events: none; }
-        .label { position: absolute; padding: 2px 5px; font-size: 10px; font-weight: bold; border-radius: 3px; transform: translate(-50%, -50%); z-index: 60; white-space: nowrap; }
+        /* Technical Center Crosshair (+) */
+        .hole { position: absolute; border: 2px solid #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff; transform: translate(-50%, -50%); z-index: 20; }
+        .hole::before { content: ''; position: absolute; width: 16px; height: 1px; background: #000; }
+        .hole::after { content: ''; position: absolute; width: 1px; height: 16px; background: #000; }
         
-        /* Fixed Reference Lines */
-        .fixed-l-h { border-top: 1.5px dashed red; width: 100%; left: 0; top: 280px; position: absolute; opacity: 0.5; }
-        .fixed-l-v { border-left: 1.5px dashed red; height: 100%; top: 0; left: 280px; position: absolute; opacity: 0.5; }
-        .fixed-lbl { color: red; border: 1px solid red; background: white; }
+        .dot-line { position: absolute; border: 1px dashed #334155; pointer-events: none; z-index: 5; }
+        .dim-lbl { position: absolute; background: #000; color: #fff; font-size: 10px; padding: 2px 5px; border-radius: 3px; transform: translate(-50%, -50%); z-index: 25; font-weight: bold; border: 1px solid #fff; }
 
-        /* Coordinate Lines (Black) */
-        .dyn-l-x { border-top: 1.5px solid #000; z-index: 40; }
-        .dyn-l-y { border-left: 1.5px solid #000; z-index: 40; }
-        .dyn-lbl { color: white; background: #000; }
+        .card { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 12px; }
+        .card h4 { margin: 0 0 10px 0; font-size: 13px; color: #1e293b; display: flex; justify-content: space-between; }
+        .row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+        input[type="number"] { width: 70px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: bold; }
+        input[type="range"] { flex: 1; }
 
-        /* Measurement Line for Gap */
-        #gap-line { height: 2px; background: #2563eb; transform-origin: left center; z-index: 15; display: flex; align-items: center; justify-content: center; }
-        #gap-label { background: #2563eb; color: white; transform: translate(-50%, -15px); }
-
-        .input-wrap { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 10px; }
-        .badge { float: right; color: #2563eb; font-weight: bold; }
-
-        @media print {
-            .sidebar { display: none !important; }
-            .workspace { margin: 0; padding: 0; background: white; }
-            .a4-page { transform: scale(0.98); margin: 0; box-shadow: none; }
+        @page { size: letter; margin: 0; }
+        @media print { 
+            .sidebar { display: none !important; } 
+            .workspace { margin: 0; padding: 0; background: #fff; } 
+            .letter-page { box-shadow: none; margin: 0; width: 100%; height: 100vh; } 
         }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <aside class="sidebar">
-            <h2 style="margin-bottom: 20px;">Control Panel</h2>
-            
-            <div class="input-wrap">
-                <label>Unit: <select id="unit-sel" style="border:none; font-weight:bold; color:#2563eb;"><option value="mm">mm</option><option value="in">inch</option></select></label>
+<div class="app-container">
+    <aside class="sidebar">
+        <h2 style="color:var(--primary); margin-bottom:15px; font-size: 20px;">RK Layout Master</h2>
+        
+        <div class="card">
+            <h4>Plate Outer Size (mm)</h4>
+            <div class="row">W: <input type="range" id="sw-r" min="150" max="400" value="340"><input type="number" id="sw-n" value="340"></div>
+            <div class="row">H: <input type="range" id="sh-r" min="150" max="400" value="240"><input type="number" id="sh-n" value="240"></div>
+        </div>
+
+        <div class="card" style="border-left: 5px solid var(--primary);">
+            <h4>Main Hole <label style="font-size:10px;"><input type="checkbox" id="dbl-c"> DOUBLE (+)</label></h4>
+            <div class="row">Ø: <input type="number" id="cd-n" value="80"></div>
+            <div class="row">X: <input type="range" id="cx-r" min="0" max="400" value="170"><input type="number" id="cx-n" value="170"></div>
+            <div class="row">Y: <input type="range" id="cy-r" min="0" max="400" value="120"><input type="number" id="cy-n" value="120"></div>
+        </div>
+
+        <div class="card" style="border-left: 5px solid var(--sec1);">
+            <h4>Small Hole 1 <input type="checkbox" id="en-s1" checked></h4>
+            <div class="row">Ø: <input type="number" id="sd1-n" value="30"></div>
+            <div class="row">X: <input type="range" id="sx1-r" min="0" max="400" value="60"><input type="number" id="sx1-n" value="60"></div>
+            <div class="row">Y: <input type="range" id="sy1-r" min="0" max="400" value="60"><input type="number" id="sy1-n" value="60"></div>
+        </div>
+
+        <div class="card" style="border-left: 5px solid var(--sec2);">
+            <h4>Small Hole 2 <input type="checkbox" id="en-s2"></h4>
+            <div class="row">Ø: <input type="number" id="sd2-n" value="30"></div>
+            <div class="row">X: <input type="range" id="sx2-r" min="0" max="400" value="280"><input type="number" id="sx2-n" value="280"></div>
+            <div class="row">Y: <input type="range" id="sy2-r" min="0" max="400" value="60"><input type="number" id="sy2-n" value="60"></div>
+        </div>
+
+        <div class="card" style="background:#f1f5f9">
+            <div class="row">Plate Thk: <input type="number" id="thk" value="12"></div>
+            <div class="row">Rate / kg: <input type="number" id="rate" value="82"></div>
+        </div>
+
+        <button style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.print()">PRINT LETTER DRAWING</button>
+    </aside>
+
+    <main class="workspace">
+        <div class="letter-page">
+            <div style="border-bottom: 3px solid #000; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-end;">
+                <div><h1 style="margin:0; font-size: 22px; letter-spacing: 1px;">ENGINEERING JOB CARD</h1><p style="margin:0; font-size: 11px; font-weight:bold; color: #444;">Designer: Ranvijay Kumar | Layout: Auto-Generated</p></div>
+                <div id="job-id" style="font-weight:900; border:2.5px solid #000; padding:5px 12px; font-size:16px; background: #eee;"></div>
             </div>
 
-            <div class="input-wrap">
-                <label>Center Hole Ø <span id="cd-txt" class="badge">120mm</span></label>
-                <input type="range" id="cd-in" min="120" max="160" value="120" style="width:100%;">
-            </div>
-
-            <div class="input-wrap">
-                <label>Small Hole Ø <span id="d-txt" class="badge">35mm</span></label>
-                <input type="range" id="d-in" min="10" max="120" value="35" style="width:100%;">
-            </div>
-            <div class="input-wrap">
-                <label>Position X <span id="x-txt" class="badge">80mm</span></label>
-                <input type="range" id="x-in" min="0" max="280" value="80" style="width:100%;">
-            </div>
-            <div class="input-wrap">
-                <label>Position Y <span id="y-txt" class="badge">80mm</span></label>
-                <input type="range" id="y-in" min="0" max="280" value="80" style="width:100%;">
-            </div>
-
-            <div class="input-wrap" style="background:#f0f9ff; border: 1px solid #0ea5e9;">
-                <label style="font-size:11px;">Thickness: <input type="number" id="t-in" value="10" style="width:60px; float:right;"></label><br><br>
-                <label style="font-size:11px;">Qty: <input type="number" id="qty-in" value="1" style="width:60px; float:right;"></label><br><br>
-                <label style="font-size:11px;">Rate/KG: <input type="number" id="rate-in" value="85" style="width:60px; float:right;"></label>
-            </div>
-            
-            <button style="width:100%; padding:15px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.print()">PRINT BLUEPRINT</button>
-        </aside>
-
-        <main class="workspace">
-            <div class="a4-page">
-                <div style="width:100%; border-bottom: 3px solid #000; padding-bottom:10px; margin-bottom: 20px; display: flex; justify-content: space-between;">
-                    <div>
-                        <h1 style="margin:0; font-size: 22px;">TECHNICAL DRAWING SHEET</h1>
-                        <p style="margin:0; font-size: 11px; color: #555;">Precision Plate Layout | Ranvijay Kumar</p>
-                    </div>
-                    <span id="header-ref" style="font-size: 11px; font-weight: bold; border: 1px solid #000; padding: 4px;"></span>
-                </div>
-
-                <div class="plate" id="plate-surface">
-                    <div class="fixed-l-h"></div><div class="fixed-l-v"></div>
-                    <div class="label fixed-lbl" style="left:50%; top:10px;">280 mm</div>
-                    <div class="label fixed-lbl" style="left:10px; top:50%; transform: rotate(-90deg) translate(0,-15px);">280 mm</div>
-                    
-                    <div id="center-hole-obj" class="center-hole"></div>
-                    
-                    <div id="line-h" class="line dyn-l-x"></div>
-                    <div id="line-v" class="line dyn-l-y"></div>
-                    <div id="lbl-x" class="label dyn-lbl"></div>
-                    <div id="lbl-y" class="label dyn-lbl"></div>
-                    
-                    <div id="gap-line" class="line"><div id="gap-label" class="label"></div></div>
-                    
-                    <div id="dynamic-hole"></div>
-                </div>
-
-                <table style="width:100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; border: 2px solid #000;">
-                    <tr style="background:#000; color:#fff;">
-                        <th style="padding:8px; border:1px solid #000; text-align:left;">PARAMETER</th>
-                        <th style="padding:8px; border:1px solid #000; text-align:left;">DIMENSION / RESULT</th>
-                    </tr>
-                    <tr><td style="padding:6px; border:1px solid #000;">Hole Center (X, Y)</td><td style="padding:6px; border:1px solid #000;" id="rep-xy">--</td></tr>
-                    <tr><td style="padding:6px; border:1px solid #000;">Radial Clearance (Gap)</td><td style="padding:6px; border:1px solid #000; color:#2563eb; font-weight:bold;" id="rep-gap">--</td></tr>
-                    <tr><td style="padding:6px; border:1px solid #000;">Unit Weight x Qty</td><td style="padding:6px; border:1px solid #000;"><span id="rep-w"></span> (<span id="rep-qty">1</span> Nos)</td></tr>
-                    <tr style="background:#000; color:#fff;"><td style="padding:8px; border:1px solid #000; font-weight:bold;">ESTIMATED TOTAL (GST Inc.)</td><td style="padding:8px; border:1px solid #000; font-weight:bold;" id="rep-total">--</td></tr>
-                </table>
-
-                <div style="width:100%; margin-top: auto; border: 2px solid #000; display: flex;">
-                    <div style="flex:2; padding:15px; border-right:2px solid #000; font-size:11px;">
-                        <strong>DESIGNED BY: RANVIJAY KUMAR</strong><br>
-                        Contact: +91 7800817675<br>
-                        <span id="footer-date"></span>
-                    </div>
-                    <div style="flex:1; text-align:center; padding-top:20px;">
-                        <div style="border-bottom:1px solid #000; width:80%; margin:0 auto;"></div>
-                        <span style="font-size:9px; font-weight:bold;">SIGNATURE</span>
-                    </div>
+            <div class="plate-box">
+                <div class="plate" id="p-surf">
+                    <div id="plate-w-lbl" class="plate-dim-x"></div>
+                    <div id="plate-h-lbl" class="plate-dim-y"></div>
+                    <div id="layer-lines"></div>
+                    <div id="layer-holes"></div>
                 </div>
             </div>
-        </main>
-    </div>
 
-    <script>
-        const dIn = document.getElementById('d-in'), xIn = document.getElementById('x-in'), 
-              yIn = document.getElementById('y-in'), cdIn = document.getElementById('cd-in'),
-              tIn = document.getElementById('t-in'), qtyIn = document.getElementById('qty-in'),
-              rateIn = document.getElementById('rate-in'), unitSel = document.getElementById('unit-sel');
+            <div style="background: #f8fafc; border: 2px solid #000; padding: 10px; margin-top: auto;">
+                <h3 style="margin: 0 0 5px 0; font-size: 12px; text-decoration: underline;">AUTOMATIC DESIGN DESCRIPTION:</h3>
+                <p id="auto-desc" style="margin: 0; font-size: 11px; line-height: 1.4; color: #000;"></p>
+            </div>
 
-        function refresh() {
-            const unit = unitSel.value;
-            const conv = (unit === 'in') ? 0.0393701 : 1;
-            const d = parseFloat(dIn.value), x = parseFloat(xIn.value), y = parseFloat(yIn.value),
-                  cd = parseFloat(cdIn.value), t = parseFloat(tIn.value), qty = parseInt(qtyIn.value) || 1,
-                  rate = parseFloat(rateIn.value);
+            <table style="width:100%; border-collapse: collapse; font-size: 11px; border: 2.5px solid #000; margin-top: 15px;">
+                <tr style="background:#000; color:#fff;"><th style="padding:10px; border:1px solid #000; text-align:left;">Final Summary</th><th style="padding:10px; border:1px solid #000; text-align:left;">Technical Data</th></tr>
+                <tr><td style="padding:8px; border:1px solid #000; font-weight:bold;">Plate Profile</td><td id="rep-size" style="padding:8px; border:1px solid #000;"></td></tr>
+                <tr style="background: #ffffcc; font-size: 14px; color: #000;"><td style="padding:10px; border:1px solid #000; font-weight:bold;">Total Weight & Estimate</td><td id="rep-total" style="padding:10px; border:1px solid #000; font-weight:bold;"></td></tr>
+            </table>
 
-            // Update Circles
-            document.getElementById('center-hole-obj').style.width = document.getElementById('center-hole-obj').style.height = (cd * 2) + "px";
-            document.getElementById('center-hole-obj').innerText = "Ø" + (cd * conv).toFixed(1) + unit;
-            
-            document.getElementById('dynamic-hole').style.width = document.getElementById('dynamic-hole').style.height = (d * 2) + "px";
-            document.getElementById('dynamic-hole').style.left = (x * 2) + "px";
-            document.getElementById('dynamic-hole').style.top = (y * 2) + "px";
-            document.getElementById('dynamic-hole').innerText = "Ø" + (d * conv).toFixed(1);
+            <div style="margin-top: 20px; display: flex; justify-content: space-between; font-size: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
+                <div>* All dimensions are in <b>mm</b>. <br>* (+) denotes Hole Center for punching.</div>
+                <div style="text-align: right;"><b>CHECKED BY:</b> ____________________</div>
+            </div>
+        </div>
+    </main>
+</div>
 
-            // Update Coordinate Measurement Lines
-            document.getElementById('line-h').style.top = (y * 2) + "px";
-            document.getElementById('line-h').style.width = (x * 2) + "px";
-            document.getElementById('line-v').style.left = (x * 2) + "px";
-            document.getElementById('line-v').style.height = (y * 2) + "px";
-            
-            document.getElementById('lbl-x').style.left = x + "px";
-            document.getElementById('lbl-x').style.top = (y * 2) + "px";
-            document.getElementById('lbl-x').innerText = "X: " + (x * conv).toFixed(1) + unit;
-            
-            document.getElementById('lbl-y').style.left = (x * 2) + "px";
-            document.getElementById('lbl-y').style.top = y + "px";
-            document.getElementById('lbl-y').innerText = "Y: " + (y * conv).toFixed(1) + unit;
+<script>
+    const inputs = [['sw-r','sw-n'],['sh-r','sh-n'],['cx-r','cx-n'],['cy-r','cy-n'],['cd-n'],['dbl-c'],['sx1-r','sx1-n'],['sy1-r','sy1-n'],['sd1-n'],['en-s1'],['sx2-r','sx2-n'],['sy2-r','sy2-n'],['sd2-n'],['en-s2'],['thk'],['rate']];
+    inputs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if(p.length===2) { const n = document.getElementById(p[1]); el.oninput = () => { n.value = el.value; refresh(); }; n.oninput = () => { el.value = n.value; refresh(); }; } else { el.oninput = refresh; }
+    });
 
-            // Gap Calculation & Measurement
-            const dx = x - 140, dy = y - 140;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            const gap = Math.abs(dist - (cd/2) - (d/2));
-            const angle = Math.atan2(dy, dx);
-            const sX = 140 + Math.cos(angle) * (cd/2);
-            const sY = 140 + Math.sin(angle) * (cd/2);
+    function drawEdgeToCenter(x, y, pW, pH, layer) {
+        const createLine = (x1, y1, w, h, val, lx, ly) => {
+            if(val <= 0) return;
+            const l = document.createElement('div'); l.className = 'dot-line';
+            l.style.left = x1+'px'; l.style.top = y1+'px'; l.style.width = w+'px'; l.style.height = h+'px';
+            if(w > 0) l.style.borderTop = '1.5px dashed #334155'; else l.style.borderLeft = '1.5px dashed #334155';
+            layer.appendChild(l);
+            const lbl = document.createElement('div'); lbl.className = 'dim-lbl';
+            lbl.style.left = lx+'px'; lbl.style.top = ly+'px'; lbl.innerText = Math.round(val);
+            layer.appendChild(lbl);
+        };
+        createLine(0, y, x, 0, x, x/2, y); 
+        createLine(x, 0, 0, y, y, x, y/2);
+        createLine(x, y, (pW-x), 0, (pW-x), x + (pW-x)/2, y);
+        createLine(x, y, 0, (pH-y), (pH-y), x, y + (pH-y)/2);
+    }
 
-            document.getElementById('gap-line').style.left = (sX * 2) + "px";
-            document.getElementById('gap-line').style.top = (sY * 2) + "px";
-            document.getElementById('gap-line').style.width = (Math.max(0, dist - (cd/2) - (d/2)) * 2) + "px";
-            document.getElementById('gap-line').style.transform = `rotate(${angle}rad)`;
-            document.getElementById('gap-label').innerText = (gap * conv).toFixed(2) + unit;
+    function refresh() {
+        const SW = parseFloat(document.getElementById('sw-n').value), SH = parseFloat(document.getElementById('sh-n').value);
+        const CX = parseFloat(document.getElementById('cx-n').value), CY = parseFloat(document.getElementById('cy-n').value), CD = parseFloat(document.getElementById('cd-n').value);
+        const s1A = document.getElementById('en-s1').checked, s2A = document.getElementById('en-s2').checked, isD = document.getElementById('dbl-c').checked;
+        const Thk = parseFloat(document.getElementById('thk').value);
 
-            // Billing
-            const weight = ((280 * 280 * t) - (Math.PI * (cd/2)**2 * t) - (Math.PI * (d/2)**2 * t)) * 0.00000785 * qty;
-            const cost = (weight * rate) * 1.18;
+        document.getElementById('plate-w-lbl').innerText = SW + " mm";
+        document.getElementById('plate-h-lbl').innerText = SH + " mm";
 
-            // UI
-            document.getElementById('cd-txt').innerText = (cd * conv).toFixed(1) + unit;
-            document.getElementById('d-txt').innerText = (d * conv).toFixed(1) + unit;
-            document.getElementById('x-txt').innerText = (x * conv).toFixed(1) + unit;
-            document.getElementById('y-txt').innerText = (y * conv).toFixed(1) + unit;
-            document.getElementById('rep-xy').innerText = "X=" + (x*conv).toFixed(1) + ", Y=" + (y*conv).toFixed(1);
-            document.getElementById('rep-gap').innerText = (gap*conv).toFixed(2) + " " + unit;
-            document.getElementById('rep-w').innerText = weight.toFixed(3) + " kg";
-            document.getElementById('rep-qty').innerText = qty;
-            document.getElementById('rep-total').innerText = "₹ " + cost.toLocaleString('en-IN', {maximumFractionDigits:2});
-            
-            document.getElementById('footer-date').innerText = "Generated: " + new Date().toLocaleString();
-            document.getElementById('header-ref').innerText = "REF: BK-" + new Date().getTime().toString().slice(-6);
-        }
+        const plate = document.getElementById('p-surf');
+        plate.style.width = SW+'px'; plate.style.height = SH+'px';
+        const lLayer = document.getElementById('layer-lines'), hLayer = document.getElementById('layer-holes');
+        lLayer.innerHTML = hLayer.innerHTML = '';
 
-        [dIn, xIn, yIn, cdIn, tIn, qtyIn, rateIn, unitSel].forEach(el => el.addEventListener('input', refresh));
-        refresh();
-    </script>
+        let holes = [];
+        let mPts = isD ? [{x:CX, y:CY, n:'Main L'}, {x:SW-CX, y:CY, n:'Main R'}] : [{x:CX, y:CY, n:'Main'}];
+        mPts.forEach(p => holes.push({...p, d:CD, type:'Main'}));
+        
+        if(s1A) holes.push({x: parseFloat(document.getElementById('sx1-n').value), y: parseFloat(document.getElementById('sy1-n').value), d: parseFloat(document.getElementById('sd1-n').value), type:'Small 1'});
+        if(s2A) holes.push({x: parseFloat(document.getElementById('sx2-n').value), y: parseFloat(document.getElementById('sy2-n').value), d: parseFloat(document.getElementById('sd2-n').value), type:'Small 2'});
+
+        let tArea = 0;
+        let descParts = [`Rectangular MS Plate of size ${SW}mm x ${SH}mm with ${Thk}mm thickness.`];
+        
+        holes.forEach(h => {
+            drawEdgeToCenter(h.x, h.y, SW, SH, lLayer);
+            const div = document.createElement('div'); div.className = 'hole';
+            div.style.width = div.style.height = h.d + 'px'; div.style.left = h.x + 'px'; div.style.top = h.y + 'px';
+            div.innerHTML = `<span style="position:absolute; bottom:-16px; font-weight:900; font-size:10px; color:#000;">Ø${h.d}</span>`;
+            hLayer.appendChild(div);
+            tArea += Math.PI * (h.d/2)**2;
+        });
+
+        descParts.push(`Contains total ${holes.length} holes: ${isD?'Two':'One'} Main Hole(s) of Ø${CD}mm.`);
+        if(s1A || s2A) descParts.push(`Additional small holes: ${s1A?`Ø${document.getElementById('sd1-n').value}mm`:''} ${s2A?`& Ø${document.getElementById('sd2-n').value}mm`:''}.`);
+        descParts.push(`All measurements marked from edges to center cross (+).`);
+
+        const w = ((SW*SH) - tArea) * Thk * 0.00000785;
+        const pr = w * parseFloat(document.getElementById('rate').value) * 1.18;
+        
+        document.getElementById('auto-desc').innerText = descParts.join(' ');
+        document.getElementById('rep-size').innerText = `${SW} x ${SH} x ${Thk} mm`;
+        document.getElementById('rep-total').innerText = `${w.toFixed(3)} kg | ₹ ${Math.round(pr)} (Inc. GST)`;
+        
+        if(!document.getElementById('job-id').innerText) document.getElementById('job-id').innerText = "JOB-" + Math.random().toString(36).substr(2,5).toUpperCase();
+    }
+    refresh();
+</script>
 </body>
 </html>
